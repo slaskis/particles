@@ -175,13 +175,12 @@ class Particles extends flash.display.Sprite {
 	    fps = Std.int( ( fps * 10 + curFPS ) * .000909 ); // = / 11 * 1000
 	    fdisplay.text = fps + " fps" + " " + tot + " ms" + " " + Std.int( flash.system.System.totalMemory / 1024 ) + " Kb";
 		_lastTime = t;
-		//trace( "Time taken: " + tot + "ms " + ( tot / NUM_PARTICLES ) + " avg, delta time: " + dt );
 	}
 	
 	
     function addTextBoxOverlay() : Void {
         var tf = new flash.text.TextFormat();
-        tf.font = 'arial';
+        tf.font = 'Arial';
         tf.size = 10;
         tf.color = 0xFFFFFF;
 
@@ -189,7 +188,7 @@ class Particles extends flash.display.Sprite {
         fdisplay.autoSize = flash.text.TextFieldAutoSize.RIGHT;
         fdisplay.defaultTextFormat = tf;
         fdisplay.selectable = false;
-        fdisplay.text = 'fps';
+        fdisplay.text = 'Waiting...';
         fdisplay.y = 600 - fdisplay.height;
         fdisplay.x = 800 - fdisplay.width;
         fdisplay.opaqueBackground = 0x000000;
@@ -229,7 +228,6 @@ class SimpleBitmapRenderer extends flash.display.BitmapData, implements IRendere
 	
 	public inline function clear() {
 		fillRect( rect , 0x0 );
-		//copyPixels( _clear , rect , _zero );q
 	}
 	
 	public inline function before() {
@@ -238,7 +236,6 @@ class SimpleBitmapRenderer extends flash.display.BitmapData, implements IRendere
 	}
 	
 	public inline function render( p : Particle ) {
-		//copyPixels( sourceBitmapData : BitmapData, sourceRect : Rectangle, destPoint : Point, ?alphaBitmapData : BitmapData, ?alphaPoint : Point, ?mergeAlpha : Bool ) : Void
 		_point.x = p.x - _source.width * .5;
 		_point.y = p.y - _source.height * .5;
 		copyPixels( _source , _source.rect , _point , null , _zero , true );
@@ -315,9 +312,7 @@ class ShapeRenderer extends flash.display.Sprite, implements IRenderer {
 			s.visible = false;
 	}
 	
-	public inline function before() {
-		
-	}
+	public inline function before();
 	
 	public inline function render( p : Particle ) {
 		var s = _shapes[ p.id - 1 ];
@@ -327,9 +322,7 @@ class ShapeRenderer extends flash.display.Sprite, implements IRenderer {
 		s.z = p.z;
 	}
 	
-	public inline function after() {
-		
-	}
+	public inline function after();
 }
 
 class LetterRenderer extends flash.display.BitmapData, implements IRenderer, implements flash.events.IEventDispatcher {
@@ -426,15 +419,10 @@ class LetterRenderer extends flash.display.BitmapData, implements IRenderer, imp
 
 
 class NullRenderer implements IRenderer {
-	
 	public function new();
-	
 	public inline function clear();
-	
 	public inline function before();
-	
 	public inline function render( p : Particle );
-
 	public inline function after();
 }
 

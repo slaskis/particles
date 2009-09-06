@@ -199,7 +199,7 @@ class Particle {
 	 * Returns true if the particle has been removed.
 	 *    
 	 */
-	public inline function update( ?dt : Float = 1 ) {
+	public inline function update( ?dt : Null<Float> = 1 ) {
 		var deleted = false;
 
 		if( active ) {

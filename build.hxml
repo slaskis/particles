@@ -6,3 +6,12 @@
 -swf-header 800:600:30:FFFFFF
 -lib minimalcomps
 -swf-lib resource.swf
+
+--next
+-cp src
+-main Banner
+-swf deploy/banner.swf
+--no-traces
+--no-inline
+-swf-version 9
+-swf-header 800:600:30:FFFFFF

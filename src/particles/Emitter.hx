@@ -12,8 +12,9 @@ byter färg kanske
 hastighet
 */
 
-
+#if flash10
 import particles.Particles; // Only to "hack" the array
+#end
 
 class Emitter {
 	

@@ -184,17 +184,11 @@ class TileMap {
 		_tmpRect = rect.clone();
 	}
 	
-	function applyEffect( e : EffectInfo ) {
+	inline function applyEffect( e : EffectInfo ) {
 		// function draw( source : IBitmapDrawable, ?matrix : Matrix, ?colorTransform : ColorTransform, ?blendMode : BlendMode, ?clipRect : Rectangle, ?smoothing : Bool ) : Void
 		e.startFrame = _currentFrame;
 		
-		var step = switch( e.effect ) {
-			case Rotation( degrees ):
-				degrees / e.frames;
-			default:
-				1 / e.frames;
-		}
-		
+		var step = 1 / e.frames;
 		for( f in 0...e.frames ) {
 			calcEffect( e , step , f );
 			if( !_resized )
