@@ -1,0 +1,8 @@
+-cp src
+-debug
+-main particles.Particles
+-swf deploy/particles.swf
+-swf-version 10
+-swf-header 800:600:30:FFFFFF
+-lib minimalcomps
+-swf-lib resource.swf
