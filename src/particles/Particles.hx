@@ -92,7 +92,7 @@ class Particles extends flash.display.Sprite {
 			_particles[i] = p;
 		}
 		*/
-		_emitter = new Emitter( Pour( 2 , 60 ) , p , 80 );
+		_emitter = new Emitter( Pour( 2 ) , p , 60 , 80 );
 		
 		
 		addTextBoxOverlay();
@@ -165,7 +165,6 @@ class Particles extends flash.display.Sprite {
 		_renderer.before();
 		var i = 0;
 		for( p in _emitter.emit() ) {
-			if( p == null ) continue;
 			if( _activeParticles )
 				p.update( dt );
 			_renderer.render( p );
@@ -401,7 +400,7 @@ class LetterRenderer extends flash.display.BitmapData, implements IRenderer, imp
 	
 	public inline function render( p : Particle ) {
 		var l = _letters[ p.id - 1 ];
-		var bmp = l.get( "rotation" , _rot );
+		var bmp = l.get( "rotation" , 60 - p.lifetime );
 		_point.x = p.x - l.width;
 		_point.y = p.y - l.height;
 		copyPixels( bmp , l.rect , _point , null , null , true );
@@ -409,10 +408,6 @@ class LetterRenderer extends flash.display.BitmapData, implements IRenderer, imp
 
 	public inline function after() {
 		unlock();
-		if( _rot++ >= 60 ) {
-			_rot = 0;
-			trace( "Resetting the rotation " );
-		}
 	}
 	
 	public function addEventListener(type : String, listener : Dynamic->Void, ?useCapture : Bool = false, ?priority : Int = 0, ?useWeakReference : Bool = false) _event.addEventListener( type , listener , useCapture , priority , useWeakReference )

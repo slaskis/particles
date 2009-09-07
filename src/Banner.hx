@@ -39,7 +39,7 @@ class Banner extends flash.display.Sprite {
 		p.friction = 0;
 		p.addForce( gravity );
 		
-		_emitter = new Emitter( Pour( 3 , 60 ) , p , 100 );
+		_emitter = new Emitter( Pour( 3 ) , p , 60 , 100 );
 	}
 
 	function onLettersDone(_) {
@@ -148,7 +148,7 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 	
 	public inline function render( p : Particle ) {
 		var l = _letters[ p.id - 1 ];
-		var bmp = l.get( "rotation" , _rot );
+		var bmp = l.get( "rotation" , 60 - p.lifetime );
 		_point.x = p.x - l.width;
 		_point.y = p.y - l.height;
 		copyPixels( bmp , l.rect , _point , null , null , true );
@@ -156,8 +156,6 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 
 	public inline function after() {
 		unlock();
-		if( _rot++ >= 60 ) 
-			_rot = 0;
 	}
 	
 	public function addEventListener(type : String, listener : Dynamic->Void, ?useCapture : Bool = false, ?priority : Int = 0, ?useWeakReference : Bool = false) _event.addEventListener( type , listener , useCapture , priority , useWeakReference )

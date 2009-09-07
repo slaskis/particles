@@ -5,6 +5,7 @@
 -swf-version 10
 -swf-header 800:600:30:FFFFFF
 -lib minimalcomps
+-lib hx3ds
 -swf-lib resource.swf
 
 --next
@@ -14,4 +15,5 @@
 --no-traces
 --no-inline
 -swf-version 9
+-lib hx3ds
 -swf-header 800:600:30:FFFFFF

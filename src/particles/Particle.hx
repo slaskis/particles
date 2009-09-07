@@ -57,6 +57,11 @@ class Particle {
 	public var wander : Float;
 	
 	/**
+	 * The number of updates the particle has existed.
+	 */
+	public var lifetime : Int;
+	
+	/**
 	 * How the particle should behave when a particle hits it's bounds.
 	 */
 	public var edgeBehavior : EdgeBehavior;
@@ -83,6 +88,7 @@ class Particle {
 	 */
 	public dynamic var onRemove : Particle -> Void;
 	
+	
 	// Previous values
 	var _x : Float;
 	var _y : Float;
@@ -93,6 +99,7 @@ class Particle {
 	
 	public function new( ?x = 0. , ?y = 0. , ?z = 0. ) {
 		vx = vy = vz = wander = 0.;
+		lifetime = 0;
 		friction = .9;
 		bounce = -.5;
 		active = true;
@@ -292,6 +299,9 @@ class Particle {
 			x += vx;
 			y += vy;
 			z += vz;
+			
+			// Yes, it lived for another update
+			lifetime++;
 		
 			// Check edges in 3 dimensions
 			if( bounds != null ) {
@@ -327,6 +337,7 @@ class Particle {
 	
 	public inline function reset() {
 		vz = vy = vx = 0.;
+		lifetime = 0;
 	}
 	
 	/**

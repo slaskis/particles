@@ -1,8 +1,8 @@
 package particles;
 
 enum EmitterType {
-	Custom( vxMin : Float , vxMax : Float , vyMin : Float , vyMax : Float , vzMin : Float , vzMax : Float , lifetime : Float );
-	Pour( spread : Float , lifetime : Float );
+	Custom( vxMin : Float , vxMax : Float , vyMin : Float , vyMax : Float , vzMin : Float , vzMax : Float );
+	Pour( spread : Float );
 }
 /*
 man vill ju kunna bestämma riktning och spridning typ
@@ -18,29 +18,29 @@ import particles.Particles; // Only to "hack" the Vector into an Array
 
 class Emitter {
 	
+	public var type : EmitterType;
 	public var x : Float;
 	public var y : Float;
 	public var z : Float;
-
-	var _type : EmitterType;
-	var _maxParticles : Int;
-	var _particlesPerFrame : Int;
-	var _pool : ParticlePool;
-	var _particles : Array<Particle>;
-	var _count : Int;
-	var _pos : Int;
-	var _lifetimes : Hash<Float>;
+	public var maxLifetime : Int;
+	public var maxParticles : Int;
+	public var particlesPerFrame : Int;
+	// TODO Would probably be better with a particle-by-second instead of particles-per-frame
 	
-	public function new( type : EmitterType , particle : Particle , maxParticles : Int , particlesPerFrame : Int = 1 ) {
-		_type = type;
-		_maxParticles = maxParticles;
-		_particlesPerFrame = particlesPerFrame;
+	var _pool : ParticlePool;
+	var _particles : de.polygonal.ds.DLL<Particle>;
+	var _count : Int;
+	
+	public function new( type : EmitterType , particle : Particle , maxLifetime : Int , maxParticles : Int , particlesPerFrame : Int = 1 ) {
+		this.type = type;
+		this.maxParticles = maxParticles;
+		this.maxLifetime = maxLifetime;
+		this.particlesPerFrame = particlesPerFrame;
 		var particle = particle.clone();
-		//particle.onRemove = removeParticle;
+		particle.onRemove = removeParticle;
 		_pool = new ParticlePool( particle , maxParticles );
-		_particles = new Array<Particle>( #if flash10 maxParticles , true #end );
-		_lifetimes = new Hash<Float>();
-		_count = _pos = 0;
+		_particles = new de.polygonal.ds.DLL<Particle>();
+		_count = 0;
 	}
 	
 	public inline function position( x , y , z ) {
@@ -50,64 +50,50 @@ class Emitter {
 	}
 	
 	public function emit() {
-		if( _count < _maxParticles ) {
-			for( i in 0..._particlesPerFrame ) {
+		if( _count < maxParticles ) {
+			for( i in 0...particlesPerFrame ) {
 				var p = _pool.retrieve();
 				p.reset();
 				p.x = x;
 				p.y = y;
 				p.z = z;
 				p.active = true;
-				switch( _type ) {
-					case Custom( vxMin , vxMax , vyMin , vyMax , vzMin , vzMax , lifetime ):
+				switch( type ) {
+					case Custom( vxMin , vxMax , vyMin , vyMax , vzMin , vzMax ):
 						p.vx = vxMin + Math.random() * ( vxMax - vxMin );
 						p.vy = vyMin + Math.random() * ( vyMax - vyMin );
 						p.vz = vzMin + Math.random() * ( vzMax - vzMin );
-						_lifetimes.set( Std.string( p.id ) , lifetime );
-					case Pour( spread , lifetime ):
+					case Pour( spread ):
 						p.vx = ( spread * -.5 ) + Math.random() * ( spread + spread );
-						_lifetimes.set( Std.string( p.id ) , lifetime );
 				}
-				_particles[ _count++ ] = p;
-				trace( "Added a particle " + p.id  + " lt: " + _lifetimes.get( Std.string( p.id ) )  + " now has " + _count );
-				if( _count >= _maxParticles )
+				
+				_particles.append( p );
+				_count++;
+				
+				//trace( "Added a particle " + p.id + " lifetime: " + p.lifetime + " now has " + _count );
+				if( _count >= maxParticles )
 					break;
 			}
 		}
-
-		for( p in _particles ) {
-	        if( p == null ) 
-	        	continue;
+		
+		for( p in _particles )
 			checkParticle( p );
-		}
 
-		_pos = 0;
 		return this;
 	}
 	
 	inline function checkParticle( p : Particle ) {
-		_lifetimes.set( Std.string( p.id ) , _lifetimes.get( Std.string( p.id ) ) - 1 );
-		var lt = _lifetimes.get( Std.string( p.id ) );
-		lt = lt - 1;
-		_lifetimes.set( Std.string( p.id ), lt );
-        if( lt < 0 ) {
+        if( p.lifetime > maxLifetime )
 			removeParticle( p );
-		}
 	}
 	
-	inline function removeParticle( p ) {
+	inline function removeParticle( p : Particle ) {
 		_pool.release( p );
-		_particles[_count] = null;
+		_particles.remove( _particles.nodeOf( p ) ); // This could probably be optimized
        	_count--;
-       	trace( "Removed a particle " + p.id  + " lt: " + _lifetimes.get( Std.string( p.id ) ) + " now has " + _count );
+       	//trace( "Removed a particle " + p.id + " lifetime: " + p.lifetime + " now has " + _count );
 	}
 	
-	public function hasNext() {
-		return _pos < _count;
-	}
-	
-	public function next() {
-		return _particles[ _pos++ ];
-	}
+	public inline function iterator() return _particles.iterator()
 
 }
