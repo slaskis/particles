@@ -1,6 +1,6 @@
 -cp src
 -debug
--main particles.Particles
+-main Particles
 -swf deploy/particles.swf
 -swf-version 10
 -swf-header 800:600:30:FFFFFF
@@ -12,8 +12,9 @@
 -cp src
 -main Banner
 -swf deploy/banner.swf
---no-traces
---no-inline
+-debug
+#--no-traces
+#--no-inline
 -swf-version 9
 -lib hx3ds
 -swf-header 800:600:30:FFFFFF

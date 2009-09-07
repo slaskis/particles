@@ -12,9 +12,7 @@ byter färg kanske
 hastighet
 */
 
-#if flash10
-import particles.Particles; // Only to "hack" the Vector into an Array
-#end
+import particles.VectorArray;
 
 class Emitter {
 	

@@ -1,5 +1,7 @@
 package particles;
 
+import particles.VectorArray;
+
 class ParticlePool {
 	
 	var _original : Particle;
