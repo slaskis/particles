@@ -36,7 +36,7 @@ class Emitter {
 		_maxParticles = maxParticles;
 		_particlesPerFrame = particlesPerFrame;
 		var particle = particle.clone();
-		particle.onRemove = removeParticle;
+		//particle.onRemove = removeParticle;
 		_pool = new ParticlePool( particle , maxParticles );
 		_particles = new Array<Particle>( #if flash10 maxParticles , true #end );
 		_lifetimes = new Hash<Float>();
@@ -53,6 +53,7 @@ class Emitter {
 		if( _count < _maxParticles ) {
 			for( i in 0..._particlesPerFrame ) {
 				var p = _pool.retrieve();
+				p.reset();
 				p.x = x;
 				p.y = y;
 				p.z = z;
@@ -87,8 +88,11 @@ class Emitter {
 	inline function checkParticle( p : Particle ) {
 		_lifetimes.set( Std.string( p.id ) , _lifetimes.get( Std.string( p.id ) ) - 1 );
 		var lt = _lifetimes.get( Std.string( p.id ) );
-        if( lt < 0 )
+		lt = lt - 1;
+		_lifetimes.set( Std.string( p.id ), lt );
+        if( lt < 0 ) {
 			removeParticle( p );
+		}
 	}
 	
 	inline function removeParticle( p ) {
