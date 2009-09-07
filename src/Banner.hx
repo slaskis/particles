@@ -39,7 +39,7 @@ class Banner extends flash.display.Sprite {
 		p.friction = 0;
 		p.addForce( gravity );
 		
-		_emitter = new Emitter( Pour( 3 , 60 ) , p , 50 );
+		_emitter = new Emitter( Pour( 3 , 60 ) , p , 100 );
 	}
 
 	function onLettersDone(_) {

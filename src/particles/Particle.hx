@@ -325,6 +325,10 @@ class Particle {
 		return !deleted;
 	}
 	
+	public inline function reset() {
+		vz = vy = vx = 0.;
+	}
+	
 	/**
 	 * Applies the updated particle on an object with x,y,z properties.
 	 */
