@@ -98,10 +98,10 @@ class Particles extends flash.display.Sprite {
 		addTextBoxOverlay();
 		
 		// Add renderer toggle
-		_radioSimple = new minimalcomps.RadioButton( this , 0 , 0 , "Simple" , false );
+		_radioSimple = new minimalcomps.RadioButton( this , 0 , 0 , "Simple" , true );
 		_radioTileMap = new minimalcomps.RadioButton( this , 0 , 20 , "TileMap" , false );
 		_radioShape = new minimalcomps.RadioButton( this , 0 , 40 , "Shape" , false );
-		_radioLetter = new minimalcomps.RadioButton( this , 0 , 60 , "Letter" , true );
+		_radioLetter = new minimalcomps.RadioButton( this , 0 , 60 , "Letter" , false );
 		_radioNull = new minimalcomps.RadioButton( this , 0 , 80 , "Null" , false );
 		
 		var o = this;

@@ -26,7 +26,7 @@ class Emitter {
 	var _maxParticles : Int;
 	var _particlesPerFrame : Int;
 	var _pool : ParticlePool;
-	var _particles : Hash<Particle>;
+	var _particles : Array<Particle>;
 	var _count : Int;
 	var _pos : Int;
 	var _lifetimes : Hash<Float>;
@@ -38,7 +38,7 @@ class Emitter {
 		var particle = particle.clone();
 		particle.onRemove = removeParticle;
 		_pool = new ParticlePool( particle , maxParticles );
-		_particles = new Hash<Particle>();
+		_particles = new Array<Particle>( #if flash10 maxParticles , true #end );
 		_lifetimes = new Hash<Float>();
 		_count = _pos = 0;
 	}
@@ -67,9 +67,8 @@ class Emitter {
 						p.vx = ( spread * -.5 ) + Math.random() * ( spread + spread );
 						_lifetimes.set( Std.string( p.id ) , lifetime );
 				}
-				_particles.set( Std.string( p.id ) , p );
+				_particles[ _count++ ] = p;
 				trace( "Added a particle " + p.id  + " lt: " + _lifetimes.get( Std.string( p.id ) )  + " now has " + _count );
-				
 				if( _count >= _maxParticles )
 					break;
 			}
@@ -86,6 +85,7 @@ class Emitter {
 	}
 	
 	inline function checkParticle( p : Particle ) {
+		_lifetimes.set( Std.string( p.id ) , _lifetimes.get( Std.string( p.id ) ) - 1 );
 		var lt = _lifetimes.get( Std.string( p.id ) );
         if( lt < 0 )
 			removeParticle( p );
@@ -93,11 +93,17 @@ class Emitter {
 	
 	inline function removeParticle( p ) {
 		_pool.release( p );
+		_particles[_count] = null;
        	_count--;
-		_particles.remove( Std.string( p.id ) );
-       	trace( "Removed a particle " + p.id  + " lt: " + _lifetimes[ p.id - 1 ] + " now has " + _count );
+       	trace( "Removed a particle " + p.id  + " lt: " + _lifetimes.get( Std.string( p.id ) ) + " now has " + _count );
 	}
 	
-	public function iterator() return _particles.iterator()
+	public function hasNext() {
+		return _pos < _count;
+	}
+	
+	public function next() {
+		return _particles[ _pos++ ];
+	}
 
 }
