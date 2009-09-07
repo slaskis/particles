@@ -61,8 +61,8 @@ class Particles extends flash.display.Sprite {
 		addChild( _shapeRenderer );
 		
 		_letterRenderer = new LetterRenderer( NUM_PARTICLES , "abcdefghijklmnopqrstuvwxyzåäö0123456789" , stage.stageWidth , stage.stageHeight );
-		addChild( new flash.display.Bitmap( _letterRenderer ) );
 		_letterRenderer.addEventListener( flash.events.Event.COMPLETE , onLettersDone );
+		addChild( new flash.display.Bitmap( _letterRenderer ) );
 		
 		_nullRenderer = new NullRenderer();
 		
@@ -92,7 +92,7 @@ class Particles extends flash.display.Sprite {
 			_particles[i] = p;
 		}
 		*/
-		_emitter = new Emitter( Pour( 3 , 60 ) , p , 50 );
+		_emitter = new Emitter( Pour( 2 , 60 ) , p , 50 );
 		
 		
 		addTextBoxOverlay();
@@ -163,17 +163,20 @@ class Particles extends flash.display.Sprite {
 		// Render
 		checkRenderer();
 		_renderer.before();
+		var i = 0;
 		for( p in _emitter.emit() ) {
+			if( p == null ) continue;
 			if( _activeParticles )
 				p.update( dt );
 			_renderer.render( p );
+			i++;
 		}
 		_renderer.after();
 		
 		var tot = Std.int( ( haxe.Timer.stamp() - t ) * 1000 );
 	    var curFPS = 1000 / ( t - _lastTime );
 	    fps = Std.int( ( fps * 10 + curFPS ) * .000909 ); // = / 11 * 1000
-	    fdisplay.text = fps + " fps" + " " + tot + " ms" + " " + Std.int( flash.system.System.totalMemory / 1024 ) + " Kb";
+	    fdisplay.text = fps + " fps" + " " + tot + " ms" + " " + Std.int( flash.system.System.totalMemory / 1024 ) + " Kb" + " " + i + " particles";
 		_lastTime = t;
 	}
 	
@@ -356,10 +359,10 @@ class LetterRenderer extends flash.display.BitmapData, implements IRenderer, imp
 		_initTime = haxe.Timer.stamp();
 		_count = count;
 		_waiter = new flash.display.Sprite();
-		createMaps();
+		_waiter.addEventListener( flash.events.Event.ENTER_FRAME , createMaps );
 	}
 	
-	function createMaps( ?e : flash.events.Event = null ) {
+	function createMaps( e ) {
 		if( e != null )
 			_waiter.removeEventListener( flash.events.Event.ENTER_FRAME , createMaps );
 		var t = haxe.Timer.stamp();
@@ -406,8 +409,10 @@ class LetterRenderer extends flash.display.BitmapData, implements IRenderer, imp
 
 	public inline function after() {
 		unlock();
-		if( _rot++ >= 60 ) 
+		if( _rot++ >= 60 ) {
 			_rot = 0;
+			trace( "Resetting the rotation " );
+		}
 	}
 	
 	public function addEventListener(type : String, listener : Dynamic->Void, ?useCapture : Bool = false, ?priority : Int = 0, ?useWeakReference : Bool = false) _event.addEventListener( type , listener , useCapture , priority , useWeakReference )
@@ -434,7 +439,7 @@ class Letter extends flash.display.BitmapData {
 			_tf.autoSize = flash.text.TextFieldAutoSize.LEFT;
 			_tf.defaultTextFormat = new flash.text.TextFormat( "Arial" , 16 , 0x0 );
 		}
-		_tf.text = char.charAt( 0 ); // Just one char/letter plz (probably has issues with unicode)
+		_tf.text = char.charAt( 0 ); // Just one char/letter plz (might give issues with unicode)
 		super( Std.int( _tf.width ) , Std.int( _tf.height ) , true , 0x0 );
 		draw( _tf , null , null , null , null , true );
 	}

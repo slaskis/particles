@@ -13,7 +13,7 @@ hastighet
 */
 
 #if flash10
-import particles.Particles; // Only to "hack" the array
+import particles.Particles; // Only to "hack" the Vector into an Array
 #end
 
 class Emitter {
@@ -26,18 +26,20 @@ class Emitter {
 	var _maxParticles : Int;
 	var _particlesPerFrame : Int;
 	var _pool : ParticlePool;
-	var _particles : Array<Particle>;
+	var _particles : Hash<Particle>;
 	var _count : Int;
 	var _pos : Int;
-	var _lifetimes : Array<Float>;
+	var _lifetimes : Hash<Float>;
 	
-	public function new( type : EmitterType , particle : Particle , maxParticles : Int , ?particlesPerFrame : Int = 5 ) {
+	public function new( type : EmitterType , particle : Particle , maxParticles : Int , particlesPerFrame : Int = 1 ) {
 		_type = type;
 		_maxParticles = maxParticles;
 		_particlesPerFrame = particlesPerFrame;
+		var particle = particle.clone();
+		particle.onRemove = removeParticle;
 		_pool = new ParticlePool( particle , maxParticles );
-		_particles = new Array<Particle>( #if flash10 maxParticles , true #end );
-		_lifetimes = new Array<Float>( #if flash10 maxParticles , true #end );
+		_particles = new Hash<Particle>();
+		_lifetimes = new Hash<Float>();
 		_count = _pos = 0;
 	}
 	
@@ -49,7 +51,7 @@ class Emitter {
 	
 	public function emit() {
 		if( _count < _maxParticles ) {
-			for( i in 0...Std.int( Math.random() * _particlesPerFrame ) ) {
+			for( i in 0..._particlesPerFrame ) {
 				var p = _pool.retrieve();
 				p.x = x;
 				p.y = y;
@@ -60,44 +62,42 @@ class Emitter {
 						p.vx = vxMin + Math.random() * ( vxMax - vxMin );
 						p.vy = vyMin + Math.random() * ( vyMax - vyMin );
 						p.vz = vzMin + Math.random() * ( vzMax - vzMin );
-						_lifetimes[ p.id - 1 ] = lifetime;
+						_lifetimes.set( Std.string( p.id ) , lifetime );
 					case Pour( spread , lifetime ):
 						p.vx = ( spread * -.5 ) + Math.random() * ( spread + spread );
-						_lifetimes[ p.id - 1 ] = lifetime;
+						_lifetimes.set( Std.string( p.id ) , lifetime );
 				}
-				_particles[_count++] = p;
-				trace( "Added a particle " + p.id  + " lt: " + _lifetimes[ p.id - 1 ] );
+				_particles.set( Std.string( p.id ) , p );
+				trace( "Added a particle " + p.id  + " lt: " + _lifetimes.get( Std.string( p.id ) )  + " now has " + _count );
 				
 				if( _count >= _maxParticles )
 					break;
 			}
 		}
-		
-		for( i in 0..._count ) {
-			var p = _particles[i];
-			if( p == null ) 
-				continue;
-			
-			_lifetimes[ p.id - 1 ] -= 1;
-			if( _lifetimes[ p.id - 1 ] < 0 )
-				p.active = false;
-				
-			if( !p.active ) {
-				_pool.release( p );
-				_particles[i] = null;
-				_count--;
-				trace( "Removed a particle " + p.id  + " lt: " + _lifetimes[ p.id - 1 ] );
-			}
+
+		for( p in _particles ) {
+	        if( p == null ) 
+	        	continue;
+			checkParticle( p );
 		}
+
+		_pos = 0;
 		return this;
 	}
 	
-	public function hasNext() {
-		return _pos < _count;
+	inline function checkParticle( p : Particle ) {
+		var lt = _lifetimes.get( Std.string( p.id ) );
+        if( lt < 0 )
+			removeParticle( p );
 	}
 	
-	public function next() {
-		return _particles[_pos++];
+	inline function removeParticle( p ) {
+		_pool.release( p );
+       	_count--;
+		_particles.remove( Std.string( p.id ) );
+       	trace( "Removed a particle " + p.id  + " lt: " + _lifetimes[ p.id - 1 ] + " now has " + _count );
 	}
+	
+	public function iterator() return _particles.iterator()
 
 }
