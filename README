@@ -1,11 +1,35 @@
+Particles
+=========
+
+A lightweight particle engine written in pure haXe. Based on Particle.as AS2 class by bit-101.
+
+Examples
+--------
+
+Coming soon.
+
+
 TODO
 ====
 
 Particle Engine
 ----------------
 
-*	The tilemaps generated (especially from text) looks like shit.
-*	
+*	Make sure the delta timing works properly.
+*	Particle#turn doesn't do anything right now (should update the Particle#direction property)
+*	Emitter might want to use the delta timing to more precisely emit a proper amount of particles (particlesPerFrame would be particlesPerUpdate)
+*	Examples (in this README)
+
+TileMap Engine
+---------------
+
+*	Optimize the tileMap sizes. (if it's 64 frames, do 8x8 or 64x1 depending on the width).
+*	Should throw errors on one tile is larger than MAX_TILE_WIDTH or MAX_TILE_HEIGHT.
+*	TileMaps should have a HSB color interpolation TileEffect
+*	TileEffect.Clip is not implemented
+*	TileEffect.Filter is not implemented 
+*	TileEffect.Alpha looks like shit.
+*	TileMap Transforms should be concatenated. Otherwise a Combine( [ Skew() , Scale() ] ) TileEffect won't work.	
 
 
 Banner

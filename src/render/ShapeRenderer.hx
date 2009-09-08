@@ -35,6 +35,15 @@ class ShapeRenderer extends flash.display.Sprite, implements IRenderer {
 	}
 	
 	public inline function after();
+	
+	#if debug
+	public function debug() : flash.display.BitmapData {
+		var s = _shapes[0];
+		var bmp = new flash.display.BitmapData( Std.int( s.width ) , Std.int( s.height ) , true , 0x0 );
+		bmp.draw( s );
+		return bmp;
+	}
+	#end
 }
 
 class Rect extends flash.display.Shape {
@@ -42,6 +51,9 @@ class Rect extends flash.display.Shape {
 		super();
 		var c = Std.int( Math.random() * 0xFFFFFF );
 		graphics.beginFill( c , 1 );
-		graphics.drawRect( 0 , 0 , 10 , 10 );
+		graphics.drawRect( 0 , 0 , 20 , 20 );
+		var c = Std.int( Math.random() * 0xFFFFFF );
+		graphics.beginFill( c , 1 );
+		graphics.drawRect( 5 , 5 , 10 , 10 );
 	}
 }

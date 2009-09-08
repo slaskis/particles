@@ -34,12 +34,17 @@ class TileRenderer extends flash.display.BitmapData , implements IRenderer {
 	public inline function render( p : particles.Particle ) {
 		_point.x = p.x - _w;
 		_point.y = p.y - _h;
-		var bmp = _map.get( "rotation" , _rot );
+		var bmp = _map.get( "rotation" , 60 - ( p.lifetime % 60 ) );
 		copyPixels( bmp , _map.rect , _point , null , null , true );
-		if( ++_rot >= 60 ) _rot = 0;
 	}
 	
 	public inline function after() {
 		unlock();
 	}
+	
+	#if debug
+	public function debug() : flash.display.BitmapData {
+		return _map.getBitmap(0);
+	}
+	#end
 }

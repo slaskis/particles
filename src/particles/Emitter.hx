@@ -4,14 +4,6 @@ enum EmitterType {
 	Custom( vxMin : Float , vxMax : Float , vyMin : Float , vyMax : Float , vzMin : Float , vzMax : Float );
 	Pour( spread : Float );
 }
-/*
-man vill ju kunna bestämma riktning och spridning typ
-och antal och livslängd
-och en effekt typ att den alphar ut, eller så
-byter färg kanske
-hastighet
-*/
-
 import particles.VectorArray;
 
 class Emitter {

@@ -221,7 +221,7 @@ class Particle {
 						var dy = pt.y - y;
 						var dz = pt.z - z;
 						var dist = Math.sqrt( dx * dx + dy * dy + dz * dz );
-						if( dist < d ) {
+						if( dist != 0 && dist < d ) {
 							var di = 1 / dist;
 							var tx = pt.x - d * ( dx * di );
 							vx += ( tx - x ) * f;
@@ -236,11 +236,13 @@ class Particle {
 						var dz = pt.z - z;
 						var distSQ = dx * dx + dy * dy + dz * dz;
 						var dist = Math.sqrt( distSQ );
-						var force = f / distSQ;
-						var di = 1 / dist;
-						vx += force * ( dx * di );
-						vy += force * ( dy * di );
-						vz += force * ( dz * di );
+						if( dist != 0 ) {
+							var force = f / distSQ;
+							var di = 1 / dist;
+							vx += force * ( dx * di );
+							vy += force * ( dy * di );
+							vz += force * ( dz * di );
+						}
 				}
 			}
 		

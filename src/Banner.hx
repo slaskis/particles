@@ -42,7 +42,7 @@ class Banner extends flash.display.Sprite {
 		p.addForce( gravity );
 		p.addPoint( _repeller );
 		
-		_emitter = new Emitter( Pour( 2 ) , p , 60 , 100 );
+		_emitter = new Emitter( Pour( 1 ) , p , 60 , 100 );
 		_emitter.x = 300;
 		_emitter.y = 200;
 	}
@@ -50,7 +50,11 @@ class Banner extends flash.display.Sprite {
 	function onLettersDone(_) {
 		_lastTime = haxe.Timer.stamp();
 		addEventListener( flash.events.Event.ENTER_FRAME , update );
+		#if debug
 		addChild( new flash.display.Bitmap( _renderer.debugMap.getBitmap( 0 ) ) );
+		addChild( new flash.display.Bitmap( _renderer.debugMap.letter ) ).x = 20;
+		addChild( render.Letter._tf );
+		#end
 	}
 	
 	function update(_) {
@@ -62,7 +66,9 @@ class Banner extends flash.display.Sprite {
 	   // _emitter.y = mouseY;
 		_repeller.x = mouseX;
 		_repeller.y = mouseY;
+		#if debug
 		addChild( _repeller.debug() );
+		#end
 		
 		// Render
 		var i = 0;
@@ -103,7 +109,9 @@ class Banner extends flash.display.Sprite {
 	public static function main() {
 		flash.Lib.current.stage.align = flash.display.StageAlign.TOP_LEFT;
 		flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
+		#if debug
 		Trazzle.setRedirection();
+		#end
 		var m = new Banner();
 		flash.Lib.current.addChild( m );
 		m.init();

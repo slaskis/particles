@@ -24,6 +24,7 @@ class EffectPoint implements haxe.Public {
 		return "[EffectPoint x:"+x+" y:"+y+" z:"+z+" type:"+type+"]";
 	}
 	
+	#if debug
 	var _dbg : flash.display.Shape;
 	public function debug() {
 		if( _dbg == null ) {
@@ -45,4 +46,5 @@ class EffectPoint implements haxe.Public {
 		#end
 		return _dbg;
 	}
+	#end
 }

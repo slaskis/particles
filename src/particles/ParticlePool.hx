@@ -20,7 +20,6 @@ class ParticlePool {
 			for( i in 0..._growthRate )
 				_pool.push( _original.clone() );
 			_available += _growthRate;
-			trace( "Resized the Particle Pool" );
 		}
 		_available--;
 		return _pool.shift();

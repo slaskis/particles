@@ -391,11 +391,10 @@ class TileMap {
 			case Alpha( alpha ):
 				// Uses Color to fade to an alpha
 				var from = new flash.geom.ColorTransform();
-				from.alphaOffset = -255;
 				from.alphaMultiplier = 1;
 				var to = new flash.geom.ColorTransform();
 				// TODO Why doesn't this work?! Changing the alpha doesn't seem to do anything?
-				to.alphaOffset = 255;
+				to.alphaOffset = -255;
 				to.alphaMultiplier = alpha;
 				// It's going backwards?
 				untyped e.currentEffect = Color( from , to );
@@ -453,7 +452,7 @@ class TileMap {
 		ri.right = r1.right + ( r2.right - r1.right ) * t;
 	}
 	
-	function getTransformBounds( trans : flash.geom.Matrix ) {
+	inline function getTransformBounds( trans : flash.geom.Matrix ) {
 		var tempBounds = _origRect.clone();
 		var tl = tempBounds.topLeft;
 		var br = tempBounds.bottomRight;
@@ -494,7 +493,7 @@ class TileMap {
 			m.translate( _maxRect.width * .5 , _maxRect.height * .5 );
 		}
 		_tmp.fillRect( _maxRect , 0x0 );
-		_tmp.draw( _source , m , effect.colorTransform );
+		_tmp.draw( _source , m , effect.colorTransform , null , null , smoothing );
 		var frame = getFrame( effect.key , _currentFrame - effect.startFrame );
 		var bitmap = getBitmap( _bitmapIndex );
 		bitmap.copyPixels( _tmp , _maxRect , frame );

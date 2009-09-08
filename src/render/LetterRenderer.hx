@@ -21,6 +21,9 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 	var _event : flash.events.EventDispatcher;
 	var _waiter : flash.display.Sprite;
 	
+	#if debug
+	public function debug()	return debugMap.getBitmap(0)
+	#end
 	public var debugMap : RotatingLetterMap;
 	
 	public function new( count , chars , width , height , font = "Arial" ) {
@@ -54,7 +57,7 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 				return;
 			}
 		}
-		debugMap = _maps.get( _chars.charAt(0) );
+		debugMap = _maps.get( _chars.charAt(_chars.length - 1) );
 		trace( "Instantiated letter maps for " + _chars.length + " letters, took: " + ( haxe.Timer.stamp() - _initTime ) + " s" );
 		
 		// Finished creating letter tiles, now make a nice mixed render stack.
@@ -96,7 +99,7 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 }
 
 class Letter extends flash.display.BitmapData {
-	static var _tf : flash.text.TextField;
+	public static var _tf : flash.text.TextField;
 	public function new( font : String , char : String ) {
 		if( _tf == null ) {
 			var embed = false;
@@ -119,11 +122,16 @@ class RotatingLetterMap extends particles.TileMap {
 	public var width : Float;
 	public var height : Float;
 	public var rotation : Int;
+	public var letter : Letter;
 	public function new( letter : Letter ) {
 		rotation = 0;
 		smoothing = true;
+		this.letter = letter;
 		super( letter , letter.width , letter.height );
-		add( "rotation" , Combine( [ Alpha( 0 ) , Rotation( 180 + Math.random() * 180 ) ] ) , 60 );
+//		add( "rotation" , Combine( [ Alpha( 0 ) , Rotation( 180 + Math.random() * 180 ) ] ) , 60 );
+//		add( "rotation" , Rotation( 180 + Math.random() * 180 ) , 60 );
+//		add( "rotation" , Tint( 0xFFFFFF ) , 60 );
+		add( "rotation" , Alpha( 0 ) , 60 );
 	}
 	override function update() {
 		super.update();

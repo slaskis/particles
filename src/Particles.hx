@@ -39,7 +39,8 @@ class Particles extends flash.display.Sprite {
 		
 		var r = new render.Rect();
 		var t = new particles.TileMap( r , Std.int( r.width ) , Std.int( r.height ) );
-		t.add( "rotation" , Rotation( 180 ) , 60 );
+	//	t.add( "rotation" , Rotation( 180 ) , 60 );
+		t.add( "rotation" , Combine( [ Alpha( 0 ) , Rotation( 180 + Math.random() * 180 ) ] ) , 60 );
 	//	t.add( "red" , Tint( 0xFF0000 ) , 60 );
 	//	t.add( "fade" , Alpha( 0.5 ) , 60 );
 	//	t.add( "scale" , Scale( 4 , 4 ) , 24 );
@@ -124,8 +125,11 @@ class Particles extends flash.display.Sprite {
 	function onLettersDone(_) {
 		_lastTime = haxe.Timer.stamp();
 		addEventListener( flash.events.Event.ENTER_FRAME , update );
-		_tileMap = addChild( new flash.display.Bitmap( _letterRenderer.debugMap.getBitmap( 0 ) ) );
+		
+		#if debug
+		_tileMap = addChild( new flash.display.Bitmap( _renderer.debug() ) );
 		_tileMap.visible = false;
+		#end
 	}
 	
 	inline function checkRenderer() {
@@ -140,6 +144,7 @@ class Particles extends flash.display.Sprite {
 			_renderer = _letterRenderer;
 		else 
 			_renderer = _nullRenderer;
+		_tileMap = addChild( new flash.display.Bitmap( _renderer.debug() ) );
 		if( old != null && old != _renderer )
 			old.clear();
 	}

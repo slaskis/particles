@@ -34,4 +34,9 @@ class SimpleBitmapRenderer extends flash.display.BitmapData, implements IRendere
 		unlock();
 	}
 	
+	#if debug
+	public function debug() : flash.display.BitmapData {
+		return _source;
+	}
+	#end
 }
