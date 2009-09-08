@@ -3,6 +3,11 @@ Particles
 
 A lightweight particle engine written in pure haXe. Based on Particle.as AS2 class by bit-101.
 
+Features
+---------
+
+Coming soon.
+
 Examples
 --------
 
@@ -15,10 +20,12 @@ TODO
 Particle Engine
 ----------------
 
-*	Make sure the delta timing works properly.
+*	Make sure the delta timing works properly. This might also fix the "exploding" effect that shows when the window has been resized or something.
 *	Particle#turn doesn't do anything right now (should update the Particle#direction property)
 *	Emitter might want to use the delta timing to more precisely emit a proper amount of particles (particlesPerFrame would be particlesPerUpdate)
-*	Examples (in this README)
+*	Examples and Features (in this README)
+*	Add EffectPoint.Deflector - A plane which the particles can bounce off of.
+*	Maybe the particles themselves may act as an EffectPoint?
 
 TileMap Engine
 ---------------
@@ -37,3 +44,5 @@ Banner
 
 *	Make it configurable using flashvars (text, size, time and url)
 *	After a specified time it should add new particles which does not fade, but bounces with the others and then they come up writing a text. At the same time the emitter should stop.
+*	RotatingLetterTileMap maybe need to use a rotating textfield instead of the bitmap transform, to get better results.
+

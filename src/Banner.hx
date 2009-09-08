@@ -17,14 +17,14 @@ class Banner extends flash.display.Sprite {
 	public function new() super()
 	
 	public function init() {
-		_renderer = new LetterRenderer( NUM_PARTICLES , "abcdefghijklmnopqrstuvwxyzåäö0123456789" , stage.stageWidth , stage.stageHeight , "RockwellExtraBold" );
+		_renderer = new LetterRenderer( NUM_PARTICLES , "abcdefghijklmnopqrstuvwxyzåäö0123456789" , 800 , 600 , new flash.text.TextFormat( "RockwellExtraBold" , 36 , 0xF4BE1D ) );
 		_renderer.addEventListener( flash.events.Event.COMPLETE , onLettersDone );
 		_renderer.createLetters();
 		
 		addChild( new flash.display.Bitmap( _renderer ) );
 
 		var gravity = new particles.Force( 0 , 0.97 , 0 );
-		_repeller = new EffectPoint( Repel( .5 , 100 ) , 300 , 400 , 0 );
+		_repeller = new EffectPoint( Repel( .5 , 100 ) , 305 , 650 , 0 );
 		var bounds = {
 			minX: 0.,
 			maxX: stage.stageWidth + 0.,
@@ -41,7 +41,7 @@ class Banner extends flash.display.Sprite {
 		p.addForce( gravity );
 		p.addPoint( _repeller );
 		
-		_emitter = new Emitter( Pour( 1 ) , p , 60 , 100 );
+		_emitter = new Emitter( Pour( 1 ) , p , 160 , NUM_PARTICLES );
 		_emitter.x = 300;
 		_emitter.y = 200;
 	}
@@ -50,7 +50,7 @@ class Banner extends flash.display.Sprite {
 		_lastTime = haxe.Timer.stamp();
 		addEventListener( flash.events.Event.ENTER_FRAME , update );
 		#if debug
-		addChild( new flash.display.Bitmap( _renderer.debugMap.getBitmap( 0 ) ) );
+		addChild( new flash.display.Bitmap( _renderer.debug() ) );
 		addChild( new flash.display.Bitmap( _renderer.debugMap.letter ) ).x = 20;
 		addChild( render.Letter._tf );
 		addTextBoxOverlay();
@@ -61,11 +61,6 @@ class Banner extends flash.display.Sprite {
 		// Time scaling
 		var t = haxe.Timer.stamp();
 		var dt = ( t - _lastTime ) / EXPECTED_FPS * 1000;
-		
-	   // _emitter.x = mouseX;
-	   // _emitter.y = mouseY;
-		_repeller.x = mouseX;
-		_repeller.y = mouseY;
 		
 		// Render
 		var i = 0;

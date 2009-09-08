@@ -16,7 +16,7 @@
 -swf-header 800:600:30:2C1840
 -debug
 #--no-traces
-#--no-inline
+--no-inline
 -swf-lib assets/RockwellExtraBold.swf
 -lib hx3ds
 

@@ -44,7 +44,6 @@ class Emitter {
 		if( _count < maxParticles ) {
 			for( i in 0...particlesPerFrame ) {
 				var p = _pool.retrieve();
-				p.reset();
 				p.x = x;
 				p.y = y;
 				p.z = z;
@@ -79,6 +78,7 @@ class Emitter {
 	}
 	
 	inline function removeParticle( p : Particle ) {
+		p.reset();
 		_pool.release( p );
 		_particles.remove( _particles.nodeOf( p ) ); // This could probably be optimized
        	_count--;

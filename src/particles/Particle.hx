@@ -195,7 +195,7 @@ class Particle {
 	 * The main update method, should be called periodically.
 	 * Optional (but recommended) to pass a delta time scale.
 	 * 
-	 * Ex of how to use delta time scale:
+	 * Example of how to use delta time scale:
 	 * 
 	 *    var now = haxe.Timer.stamp();
 	 *    var dt = ( ( now - _lastTime ) / ( 1000 / EXPECTED_FPS ) ) * 1000;
@@ -205,7 +205,7 @@ class Particle {
 	 * Returns true if the particle has been removed.
 	 *    
 	 */
-	public inline function update( dt : Null<Float> = 1. ) {
+	public inline function update( ?dt : Null<Float> = 1. ) {
 		var deleted = false;
 
 		if( active ) {
@@ -286,7 +286,7 @@ class Particle {
 			// TODO Is this really the right way? It has different behavior depending on the fps this way
 			// It might be that dt has to be applied to every other v* modifier
 			// Or i calculate the dt wrong...
-			if( dt != 1 ) {
+			if( dt != null && dt != 1 ) {
 				vx *= dt;
 				vy *= dt;
 				vz *= dt;
