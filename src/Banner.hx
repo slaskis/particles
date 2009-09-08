@@ -1,8 +1,3 @@
-
-#if flash10
-typedef Array<T> = flash.Vector<T>;
-#end
-
 import particles.Particle;
 import particles.TileMap;
 import particles.Emitter;
@@ -17,17 +12,22 @@ class Banner extends flash.display.Sprite {
 	var _renderer : LetterRenderer;
 	var _emitter : Emitter;
 	var _lastTime : Float;
+	var _repeller : EffectPoint;
 	
 	public function new() super()
 	
 	public function init() {
-		_renderer = new LetterRenderer( NUM_PARTICLES , "abcdefghijklmnopqrstuvwxyzåäö0123456789" , stage.stageWidth , stage.stageHeight );
+		_renderer = new LetterRenderer( NUM_PARTICLES , "abcdefghijklmnopqrstuvwxyzåäö0123456789" , stage.stageWidth , stage.stageHeight , "RockwellExtraBold" );
 		_renderer.addEventListener( flash.events.Event.COMPLETE , onLettersDone );
 		_renderer.createLetters();
+		
+		addChild( new flash.display.Bitmap( _renderer.debugMap.getBitmap( 0 ) ) );
+		
 		addChild( new flash.display.Bitmap( _renderer ) );
 		addTextBoxOverlay();
 
 		var gravity = new particles.Force( 0 , 0.97 , 0 );
+		_repeller = new EffectPoint( Repel( 1000 , 100 ) , 300 , 400 , 0 );
 		var bounds = {
 			minX: 0.,
 			maxX: stage.stageWidth + 0.,
@@ -37,20 +37,19 @@ class Banner extends flash.display.Sprite {
 			maxZ: 500.
 		}
 		
-		var repeller = new EffectPoint( Repel( .1 , 100 ) , 300 , 800 , 0 );
-		
 		var p = new Particle();
-		p.edgeBehavior = Remove;
+		p.edgeBehavior = Bounce;
 		p.bounds = bounds;
-		p.friction = 0;
+		p.friction = 0.;
 		p.addForce( gravity );
-		p.addPoint( repeller );
+		p.addPoint( _repeller );
 		
 		_emitter = new Emitter( Pour( 2 ) , p , 60 , 100 );
+		_emitter.x = 300;
+		_emitter.y = 200;
 	}
 
 	function onLettersDone(_) {
-		trace( "LETTERS DONE!" );
 		_lastTime = haxe.Timer.stamp();
 		addEventListener( flash.events.Event.ENTER_FRAME , update );
 	}
@@ -60,8 +59,10 @@ class Banner extends flash.display.Sprite {
 		var t = haxe.Timer.stamp();
 		var dt = ( t - _lastTime ) / EXPECTED_FPS * 1000;
 		
-		_emitter.x = mouseX;
-		_emitter.y = mouseY;
+	   // _emitter.x = mouseX;
+	   // _emitter.y = mouseY;
+		_repeller.x = mouseX;
+		_repeller.y = mouseY;
 		
 		// Render
 		var i = 0;
@@ -109,3 +110,4 @@ class Banner extends flash.display.Sprite {
 	}
 }
 
+class RockwellExtraBold extends flash.text.Font {}

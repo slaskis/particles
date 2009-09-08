@@ -12,9 +12,10 @@
 -cp src
 -main Banner
 -swf deploy/banner.swf
+-swf-version 9
+-swf-header 800:600:30:FFFFFF
 -debug
 #--no-traces
 #--no-inline
--swf-version 9
+-swf-lib assets/RockwellExtraBold.swf
 -lib hx3ds
--swf-header 800:600:30:FFFFFF

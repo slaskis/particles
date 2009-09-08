@@ -7,8 +7,8 @@ enum EffectType {
 }
 
 class EffectPoint implements haxe.Public {
-	var type : EffectType;
 	
+	var type : EffectType;
 	var x : Float;
 	var y : Float;
 	var z : Float;

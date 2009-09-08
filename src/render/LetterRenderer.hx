@@ -8,6 +8,7 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 	static inline var FRAME_TIME : Float = .5;
 	
 	var _clear : flash.display.BitmapData;
+	var _font : String;
 	var _point : flash.geom.Point;
 	var _zero : flash.geom.Point;
 	var _chars : String;
@@ -19,9 +20,10 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 	var _count : Int;
 	var _event : flash.events.EventDispatcher;
 	var _waiter : flash.display.Sprite;
+	
 	public var debugMap : RotatingLetterMap;
 	
-	public function new( count , chars , width , height ) {
+	public function new( count , chars , width , height , font = "Arial" ) {
 		super( width, height, true, 0x0 );
 		_event = new flash.events.EventDispatcher( this );
 		_clear = new flash.display.BitmapData( width, height, true, 0x0 );
@@ -29,6 +31,7 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 		_zero = new flash.geom.Point();
 		_rot = _charPos = 0;
 		_chars = chars;
+		_font = font;
 		_letters = new Array<RotatingLetterMap>(#if flash10 count, true #end);
 		_maps = new Hash<RotatingLetterMap>();
 		_initTime = haxe.Timer.stamp();
@@ -42,7 +45,7 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 		var t = haxe.Timer.stamp();
 		for( i in _charPos..._chars.length ) {			
 			var char = _chars.charAt( i );
-			_maps.set( char , new RotatingLetterMap( new Letter( char ) ) );
+			_maps.set( char , new RotatingLetterMap( new Letter( _font , char ) ) );
 			if( haxe.Timer.stamp() - t > FRAME_TIME ) {
 				_charPos = i;
 				// Wait one frame and try again
@@ -94,11 +97,16 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 
 class Letter extends flash.display.BitmapData {
 	static var _tf : flash.text.TextField;
-	public function new( char : String ) {
+	public function new( font : String , char : String ) {
 		if( _tf == null ) {
+			var embed = false;
+			for( f in flash.text.Font.enumerateFonts() )
+				if( f.fontName == font )
+					embed = true;
 			_tf = new flash.text.TextField();
+			_tf.embedFonts = embed;
 			_tf.autoSize = flash.text.TextFieldAutoSize.LEFT;
-			_tf.defaultTextFormat = new flash.text.TextFormat( "Arial" , 16 , 0x0 );
+			_tf.defaultTextFormat = new flash.text.TextFormat( font , 16 , 0x0 );
 		}
 		_tf.text = char.charAt( 0 ); // Just one char/letter plz (probably has issues with unicode)
 		super( Std.int( _tf.width ) , Std.int( _tf.height ) , true , 0x0 );

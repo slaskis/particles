@@ -223,18 +223,12 @@ class Particle {
 						var dz = pt.z - z;
 						var dist = Math.sqrt( dx * dx + dy * dy + dz * dz );
 						if( dist < d ) {
-							if( pt.x != 0 ) {
-								var tx = pt.x - d * dx / dist;
-								vx += (tx - x) * f;
-							}
-							if( pt.y != 0 ) {
-								var ty = pt.y - d * dy / dist;
-								vy += (ty - y) * f;
-							}
-							if( pt.z != 0 ) {
-								var tz = pt.z - d * dz / dist;
-								vz += (tz - z) * f;
-							}
+							var tx = pt.x - d * dx / dist;
+							vx += (tx - x) * f;
+							var ty = pt.y - d * dy / dist;
+							vy += (ty - y) * f;
+							var tz = pt.z - d * dz / dist;
+							vz += (tz - z) * f;
 						}
 					case Attract( f ):
 						var dx = pt.x - x;
