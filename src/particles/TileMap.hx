@@ -151,8 +151,8 @@ class TileMap {
 		
 		// TODO Set an "optimal" tile map size based on number of frames and framesizes.
 		// If they're modified all bitmaps need to be removed
-		_tileMapWidth = 440;
-		_tileMapHeight = 440;
+		_tileMapWidth = 480;
+		_tileMapHeight = 480;
 		
 		// Calculate some MapInfo with the current sizes
 		_mapInfo = new MapInfo( Math.ceil( _tileMapWidth / _maxRect.width ), Math.ceil( _tileMapHeight / _maxRect.height ) );

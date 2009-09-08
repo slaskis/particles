@@ -39,6 +39,7 @@ class Emitter {
 		_pool = new ParticlePool( particle , maxParticles );
 		_particles = new de.polygonal.ds.DLL<Particle>();
 		_count = 0;
+		x = y = z = 0.;
 	}
 	
 	public inline function position( x , y , z ) {

@@ -39,7 +39,7 @@ class Particles extends flash.display.Sprite {
 		
 		var r = new render.Rect();
 		var t = new particles.TileMap( r , Std.int( r.width ) , Std.int( r.height ) );
-	//	t.add( "rotation" , Rotation( 180 ) , 60 );
+		t.add( "rotation" , Rotation( 180 ) , 60 );
 	//	t.add( "red" , Tint( 0xFF0000 ) , 60 );
 	//	t.add( "fade" , Alpha( 0.5 ) , 60 );
 	//	t.add( "scale" , Scale( 4 , 4 ) , 24 );

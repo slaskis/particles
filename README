@@ -1,0 +1,15 @@
+TODO
+====
+
+Particle Engine
+----------------
+
+*	The tilemaps generated (especially from text) looks like shit.
+*	
+
+
+Banner
+-------
+
+*	Make it configurable using flashvars (text, size, time and url)
+*	After a specified time it should add new particles which does not fade, but bounces with the others and then they come up writing a text. At the same time the emitter should stop.

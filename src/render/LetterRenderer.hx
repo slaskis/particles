@@ -109,6 +109,7 @@ class Letter extends flash.display.BitmapData {
 			_tf.defaultTextFormat = new flash.text.TextFormat( font , 16 , 0x0 );
 		}
 		_tf.text = char.charAt( 0 ); // Just one char/letter plz (probably has issues with unicode)
+		trace( "Creating a Letter of: " + char.charAt( 0 ) );
 		super( Std.int( _tf.width ) , Std.int( _tf.height ) , true , 0x0 );
 		draw( _tf , null , null , null , null , true );
 	}

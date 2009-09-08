@@ -21,13 +21,11 @@ class Banner extends flash.display.Sprite {
 		_renderer.addEventListener( flash.events.Event.COMPLETE , onLettersDone );
 		_renderer.createLetters();
 		
-		addChild( new flash.display.Bitmap( _renderer.debugMap.getBitmap( 0 ) ) );
-		
 		addChild( new flash.display.Bitmap( _renderer ) );
 		addTextBoxOverlay();
 
 		var gravity = new particles.Force( 0 , 0.97 , 0 );
-		_repeller = new EffectPoint( Repel( 1000 , 100 ) , 300 , 400 , 0 );
+		_repeller = new EffectPoint( Repel( .1 , 100 ) , 300 , 400 , 0 );
 		var bounds = {
 			minX: 0.,
 			maxX: stage.stageWidth + 0.,
@@ -52,6 +50,7 @@ class Banner extends flash.display.Sprite {
 	function onLettersDone(_) {
 		_lastTime = haxe.Timer.stamp();
 		addEventListener( flash.events.Event.ENTER_FRAME , update );
+		addChild( new flash.display.Bitmap( _renderer.debugMap.getBitmap( 0 ) ) );
 	}
 	
 	function update(_) {
@@ -63,6 +62,7 @@ class Banner extends flash.display.Sprite {
 	   // _emitter.y = mouseY;
 		_repeller.x = mouseX;
 		_repeller.y = mouseY;
+		addChild( _repeller.debug() );
 		
 		// Render
 		var i = 0;

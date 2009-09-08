@@ -75,7 +75,6 @@ class Particle {
 	public var active : Bool;
 	
 	/**
-	 * Should the particle turn in the direction it's moving? 
 	 * If set to true the direction axis is updated.
 	 * TODO
 	 */
@@ -97,7 +96,7 @@ class Particle {
 	var _points : Array<EffectPoint>;
 	var _forces : Array<Force>;
 	
-	public function new( ?x = 0. , ?y = 0. , ?z = 0. ) {
+	public function new( x=0. , y=0. , z=0. ) {
 		vx = vy = vz = wander = 0.;
 		lifetime = 0;
 		friction = .9;
@@ -111,9 +110,9 @@ class Particle {
 		_points = new Array<EffectPoint>();
 		_forces = new Array<Force>();
 		
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		this.x = _x = x;
+		this.y = _y = y;
+		this.z = _z = z;
 	}
 	
 	public function clone() {
@@ -141,7 +140,7 @@ class Particle {
 	public function pushX( v : Float ) vx += v
 	public function pushY( v : Float ) vy += v
 	public function pushZ( v : Float ) vz += v
-	public function push( ?x : Float = 0. , ?y : Float = 0. , ?z : Float = 0. ) {
+	public function push( x=0. , y=0. , z=0. ) {
 		vx += x;
 		vy += y;
 		vz += z;
@@ -206,7 +205,7 @@ class Particle {
 	 * Returns true if the particle has been removed.
 	 *    
 	 */
-	public inline function update( ?dt : Null<Float> = 1 ) {
+	public inline function update( dt=1. ) {
 		var deleted = false;
 
 		if( active ) {
@@ -223,12 +222,13 @@ class Particle {
 						var dz = pt.z - z;
 						var dist = Math.sqrt( dx * dx + dy * dy + dz * dz );
 						if( dist < d ) {
-							var tx = pt.x - d * dx / dist;
-							vx += (tx - x) * f;
-							var ty = pt.y - d * dy / dist;
-							vy += (ty - y) * f;
-							var tz = pt.z - d * dz / dist;
-							vz += (tz - z) * f;
+							var di = 1 / dist;
+							var tx = pt.x - d * ( dx * di );
+							vx += ( tx - x ) * f;
+							var ty = pt.y - d * ( dy * di );
+							vy += ( ty - y ) * f;
+							var tz = pt.z - d * ( dz * di );
+							vz += ( tz - z ) * f;
 						}
 					case Attract( f ):
 						var dx = pt.x - x;
@@ -237,9 +237,10 @@ class Particle {
 						var distSQ = dx * dx + dy * dy + dz * dz;
 						var dist = Math.sqrt( distSQ );
 						var force = f / distSQ;
-						if( pt.x != 0 ) vx += force * dx / dist;
-						if( pt.y != 0 ) vy += force * dy / dist;
-						if( pt.z != 0 ) vz += force * dz / dist;
+						var di = 1 / dist;
+						vx += force * ( dx * di );
+						vy += force * ( dy * di );
+						vz += force * ( dz * di );
 				}
 			}
 		
@@ -266,18 +267,18 @@ class Particle {
 			if( maxSpeed != null ) {
 				var speed = Math.sqrt( vx * vx + vy * vy + vz * vz );
 				if( speed > maxSpeed ) {
-					vx = maxSpeed * vx / speed;
-					vy = maxSpeed * vy / speed;
-					vz = maxSpeed * vz / speed;
+					var si = 1 / speed;
+					vx = maxSpeed * ( vx * si );
+					vy = maxSpeed * ( vy * si );
+					vz = maxSpeed * ( vz * si );
 				}
 			}
 		
-			// TODO Turn the object in 3 angles (need a public direction/rotation property or something)
-		
-			// Update the previous positions (not sure why this is needed yet)
-			_x = x;
-			_y = y;
-			_z = z;
+			// Apply turn
+			if( turn ) {
+				// TODO Turn the object in 3 angles (need a public direction/rotation property or something)
+				
+			}
 		
 			// Apply delta time scale
 			// TODO Is this really the right way? It has different behavior depending on the fps this way
@@ -288,7 +289,12 @@ class Particle {
 				vy *= dt;
 				vz *= dt;
 			}
-		
+			
+			// Update the previous positions (will be needed to find the direction)
+			_x = x;
+			_y = y;
+			_z = z;
+			
 			// Update the position
 			x += vx;
 			y += vy;
@@ -326,6 +332,7 @@ class Particle {
 				}
 			}
 		}
+		
 		return !deleted;
 	}
 	
