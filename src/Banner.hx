@@ -22,10 +22,9 @@ class Banner extends flash.display.Sprite {
 		_renderer.createLetters();
 		
 		addChild( new flash.display.Bitmap( _renderer ) );
-		addTextBoxOverlay();
 
 		var gravity = new particles.Force( 0 , 0.97 , 0 );
-		_repeller = new EffectPoint( Repel( .1 , 100 ) , 300 , 400 , 0 );
+		_repeller = new EffectPoint( Repel( .5 , 100 ) , 300 , 400 , 0 );
 		var bounds = {
 			minX: 0.,
 			maxX: stage.stageWidth + 0.,
@@ -36,9 +35,9 @@ class Banner extends flash.display.Sprite {
 		}
 		
 		var p = new Particle();
-		p.edgeBehavior = Bounce;
+		p.edgeBehavior = Remove;
 		p.bounds = bounds;
-		p.friction = 0.;
+		p.friction = 0.03;
 		p.addForce( gravity );
 		p.addPoint( _repeller );
 		
@@ -54,6 +53,7 @@ class Banner extends flash.display.Sprite {
 		addChild( new flash.display.Bitmap( _renderer.debugMap.getBitmap( 0 ) ) );
 		addChild( new flash.display.Bitmap( _renderer.debugMap.letter ) ).x = 20;
 		addChild( render.Letter._tf );
+		addTextBoxOverlay();
 		#end
 	}
 	
@@ -66,9 +66,6 @@ class Banner extends flash.display.Sprite {
 	   // _emitter.y = mouseY;
 		_repeller.x = mouseX;
 		_repeller.y = mouseY;
-		#if debug
-		addChild( _repeller.debug() );
-		#end
 		
 		// Render
 		var i = 0;
@@ -80,13 +77,18 @@ class Banner extends flash.display.Sprite {
 		}
 		_renderer.after();
 		
+		#if debug
+		addChild( _repeller.debug() );
 		var tot = Std.int( ( haxe.Timer.stamp() - t ) * 1000 );
 	    var curFPS = 1000 / ( t - _lastTime );
 	    fps = Std.int( ( fps * 10 + curFPS ) * .000909 ); // = / 11 * 1000
 	    fdisplay.text = fps + " fps" + " " + tot + " ms" + " " + Std.int( flash.system.System.totalMemory / 1024 ) + " Kb" + " " + i + " particles";
+		#end
+		
 		_lastTime = t;
 	}
 	
+	#if debug
 	var fps : Int;
 	var fdisplay : flash.text.TextField;
     function addTextBoxOverlay() : Void {
@@ -105,6 +107,7 @@ class Banner extends flash.display.Sprite {
         fdisplay.opaqueBackground = 0x000000;
         addChild( fdisplay );
     }
+	#end
 
 	public static function main() {
 		flash.Lib.current.stage.align = flash.display.StageAlign.TOP_LEFT;

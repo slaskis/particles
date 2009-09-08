@@ -81,7 +81,7 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 	
 	public inline function render( p : particles.Particle ) {
 		var l = _letters[ p.id - 1 ];
-		var bmp = l.get( "rotation" , 60 - p.lifetime );
+		var bmp = l.get( "rotation" , p.lifetime );
 		_point.x = p.x - l.width;
 		_point.y = p.y - l.height;
 		copyPixels( bmp , l.rect , _point , null , null , true );
@@ -109,7 +109,7 @@ class Letter extends flash.display.BitmapData {
 			_tf = new flash.text.TextField();
 			_tf.embedFonts = embed;
 			_tf.autoSize = flash.text.TextFieldAutoSize.LEFT;
-			_tf.defaultTextFormat = new flash.text.TextFormat( font , 16 , 0x0 );
+			_tf.defaultTextFormat = new flash.text.TextFormat( font , 36 , 0xF4BE1D );
 		}
 		_tf.text = char.charAt( 0 ); // Just one char/letter plz (probably has issues with unicode)
 		trace( "Creating a Letter of: " + char.charAt( 0 ) );
@@ -129,9 +129,10 @@ class RotatingLetterMap extends particles.TileMap {
 		this.letter = letter;
 		super( letter , letter.width , letter.height );
 //		add( "rotation" , Combine( [ Alpha( 0 ) , Rotation( 180 + Math.random() * 180 ) ] ) , 60 );
+		add( "rotation" , Combine( [ Tint( 0x2C1840 ) , Rotation( 180 + Math.random() * 180 ) ] ) , 60 );
 //		add( "rotation" , Rotation( 180 + Math.random() * 180 ) , 60 );
 //		add( "rotation" , Tint( 0xFFFFFF ) , 60 );
-		add( "rotation" , Alpha( 0 ) , 60 );
+//		add( "rotation" , Alpha( 0 ) , 60 );
 	}
 	override function update() {
 		super.update();

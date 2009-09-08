@@ -13,9 +13,21 @@
 -main Banner
 -swf deploy/banner.swf
 -swf-version 9
--swf-header 800:600:30:FFFFFF
+-swf-header 800:600:30:2C1840
 -debug
 #--no-traces
 #--no-inline
+-swf-lib assets/RockwellExtraBold.swf
+-lib hx3ds
+
+--next
+-cp src
+-main Banner
+-swf deploy/banner_release.swf
+-swf-version 9
+-swf-header 800:600:30:2C1840
+#-debug
+--no-traces
+--no-inline
 -swf-lib assets/RockwellExtraBold.swf
 -lib hx3ds
