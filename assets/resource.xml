@@ -3,7 +3,8 @@
     <background color="#555555"/>
     <frame>
 	    <library>
-	        <font name="RockwellExtraBold" import="font/ROCKWEEB.TTF" />
+	        <font id="RockwellExtraBold" name="RockwellExtraBold" import="font/ROCKWEEB.TTF" />
+			<clip id="Arrow" import="arrow.png" />
 	    </library>
     </frame>
 </movie>

@@ -48,7 +48,7 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 		var t = haxe.Timer.stamp();
 		for( i in _charPos..._chars.length ) {			
 			var char = _chars.charAt( i );
-			_maps.set( char , new RotatingLetterMap( new Letter( _format , char ) ) );
+			_maps.set( char , new RotatingLetterMap( new Letter( _format , char ) , Combine( [ Tint( 0x2C1840 ) , Rotation( 180 + Math.random() * 180 ) ] ) ) );
 			if( haxe.Timer.stamp() - t > FRAME_TIME ) {
 				_charPos = i;
 				// Wait one frame and try again
@@ -109,8 +109,8 @@ class Letter extends flash.display.BitmapData {
 			_tf.defaultTextFormat = format;
 		}
 		_tf.text = char.charAt( 0 ); // Just one char/letter plz (probably has issues with unicode)
-		//trace( "Creating a Letter of: " + char.charAt( 0 ) );
-		super( Std.int( _tf.width ) , Std.int( _tf.height ) , true , 0x0 );
+		trace( "Creating a Letter of: " + char.charAt( 0 ) + " size: " + _tf.width + "x" + _tf.height );
+		super( Math.ceil( _tf.width ) , Math.ceil( _tf.height ) , true , 0x0 );
 		draw( _tf , null , null , null , null , true );
 	}
 }
@@ -120,17 +120,19 @@ class RotatingLetterMap extends particles.TileMap {
 	public var height : Float;
 	public var rotation : Int;
 	public var letter : Letter;
-	public function new( letter : Letter ) {
+	public function new( letter : Letter , effect : TileEffect , frames = 60 ) {
 		rotation = 0;
 		smoothing = true;
 		this.letter = letter;
 		super( letter , letter.width , letter.height );
 //		add( "rotation" , Combine( [ Alpha( 0 ) , Rotation( 180 + Math.random() * 180 ) ] ) , 60 );
-		add( "rotation" , Combine( [ Tint( 0x2C1840 ) , Rotation( 180 + Math.random() * 180 ) ] ) , 60 );
+//		add( "rotation" , Combine( [ Tint( 0x2C1840 ) , Rotation( 180 + Math.random() * 180 ) ] ) , 60 );
 //		add( "rotation" , Rotation( 180 + Math.random() * 180 ) , 60 );
 //		add( "rotation" , Tint( 0xFFFFFF ) , 60 );
 //		add( "rotation" , Alpha( 0 ) , 60 );
+		add( "rotation" , effect , frames );
 	}
+	
 	override function update() {
 		super.update();
 		width = rect.width * .5;

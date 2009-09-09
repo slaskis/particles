@@ -47,7 +47,6 @@ class Emitter {
 				p.x = x;
 				p.y = y;
 				p.z = z;
-				p.active = true;
 				switch( type ) {
 					case Custom( vxMin , vxMax , vyMin , vyMax , vzMin , vzMax ):
 						p.vx = vxMin + Math.random() * ( vxMax - vxMin );

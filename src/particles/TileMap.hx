@@ -90,7 +90,6 @@ class TileMap {
 	var _resized : Bool;
 	var _tmp : flash.display.BitmapData;
 	var _origRect : flash.geom.Rectangle;
-	var _tmpRect : flash.geom.Rectangle;
 	var _maxRect : flash.geom.Rectangle;
 	var _currentFrame : Int;
 	var _totalFrames : Int;
@@ -104,13 +103,12 @@ class TileMap {
 		_source = source;
 		_bitmaps = new Array<flash.display.BitmapData>();
 		_effects = new Hash<EffectInfo>();
-		rect = new flash.geom.Rectangle( 0 , 0 , tileWidth , tileHeight );
 		blendMode = null;
 		smoothing = false;
-		_totalFrames = _currentFrame = 0;
+		rect = new flash.geom.Rectangle( 0 , 0 , tileWidth , tileHeight );
 		_origRect = rect.clone();
 		_maxRect = rect.clone();
-		_tmpRect = rect.clone();
+		_totalFrames = _currentFrame = 0;
 		_framePosition = new flash.geom.Point();
 	}
 	
@@ -151,12 +149,29 @@ class TileMap {
 		
 		// TODO Set an "optimal" tile map size based on number of frames and framesizes.
 		// If they're modified all bitmaps need to be removed
+		/* Failed attempt:
+		var maxTilesPerRow = Math.floor( MAX_TILE_MAP_WIDTH / _maxRect.width );
+		var totalTiles = 0;
+		for( e in _effects )
+			totalTiles += e.frames;
+		
+		if( totalTiles < maxTilesPerRow ) {
+			// Simplify for few frames.
+			_tileMapWidth = Std.int( totalTiles * _maxRect.width );
+			_tileMapHeight = Std.int( _maxRect.height );
+		} else {
+			var rowsNeeded = Math.ceil( maxTilesPerRow / totalTiles );
+			_tileMapWidth = MAX_TILE_MAP_WIDTH;
+			_tileMapHeight = Std.int( rowsNeeded * _maxRect.height );
+		}
+		*/
+			
 		_tileMapWidth = 480;
 		_tileMapHeight = 480;
 		
 		// Calculate some MapInfo with the current sizes
 		_mapInfo = new MapInfo( Math.ceil( _tileMapWidth / _maxRect.width ), Math.ceil( _tileMapHeight / _maxRect.height ) );
-		trace( "Updating MapInfo: " + _mapInfo );
+		trace( "Updating MapInfo: " + _mapInfo + " TileMap Size:" + _tileMapWidth + "x" + _tileMapHeight );
 		
 		// Create a temporary bitmap, if we haven't already, on which we write the effects and then copy onto the final bitmaps
 		updateTempBitmap();
@@ -181,7 +196,6 @@ class TileMap {
 		
 		// Now it's ok to reset the tile rect
 		rect = _maxRect.clone();
-		_tmpRect = rect.clone();
 	}
 	
 	inline function applyEffect( e : EffectInfo ) {
@@ -327,14 +341,12 @@ class TileMap {
 			case Combine( effects ):
 				// Recursively updates the effects
 				var effects : Array<TileEffect> = Type.enumParameters( e.effect )[0];
-				//trace( "Combining: " + effects );
 				for( fx in effects ) {
 					e.currentEffect = fx;
 					calcEffect( e , step , f , true );
 				}
 			
 			case Rotation( degrees ):
-			
 				// Because the interpolation of a rotation matrix is not linear, but follows
 				// sine/cosine, we need to do this special from the other transformations.
 				var degree = f * ( degrees / e.frames );

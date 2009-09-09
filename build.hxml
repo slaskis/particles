@@ -1,3 +1,6 @@
+-cmd swfmill simple assets/resource.xml
+
+--next
 -cp src
 -debug
 -main Particles
@@ -17,7 +20,7 @@
 -debug
 #--no-traces
 --no-inline
--swf-lib assets/RockwellExtraBold.swf
+-swf-lib assets/resources.swf
 -lib hx3ds
 
 --next
@@ -29,5 +32,5 @@
 #-debug
 --no-traces
 --no-inline
--swf-lib assets/RockwellExtraBold.swf
+-swf-lib assets/resources.swf
 -lib hx3ds
