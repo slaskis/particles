@@ -19,7 +19,7 @@ t.remove( "rot" );
 enum TileEffect {
 	Combine( effects : Array<TileEffect> );
 	Rotation( degrees : Float );
-	Scale( x : Float , y : Float );
+	Scale( x : Float , ?y : Float );
 	Skew( x : Float , y : Float );
 	Clip( from : flash.geom.Rectangle , to : flash.geom.Rectangle );
 	Transform( from : flash.geom.Matrix , to : flash.geom.Matrix );
@@ -56,9 +56,9 @@ class MapInfo {
 	public var tilesY : Int; 
 	public var frames : Int;
 	public function new( x , y ) {
-		tilesX = x;
-		tilesY = y;
-		frames = x * y;
+		tilesX = Std.int( Math.max( x , 1 ) );
+		tilesY = Std.int( Math.max( y , 1 ) );
+		frames = tilesX * tilesY;
 	}
 	public function toString() {
 		return tilesX + "x" + tilesY + "=" + frames;
@@ -78,6 +78,8 @@ class TileMap {
 	#end
 	
 	static inline var TO_RADIANS : Float = Math.PI / 180;
+	
+	static var SMOOTH_BLUR : flash.filters.BlurFilter = new flash.filters.BlurFilter( 2 , 2 );
 	
 	public var rect : flash.geom.Rectangle;
 	public var smoothing : Bool;
@@ -133,6 +135,7 @@ class TileMap {
 		var frame = getFrame( key , offset );
 		rect.x = frame.x;
 		rect.y = frame.y;
+		//trace( "Offset:" + offset + " Position:" + frame + " Bitmap:" + _bitmapIndex );
 		return _bitmaps[ _bitmapIndex ];
 	}
 	
@@ -149,7 +152,6 @@ class TileMap {
 		
 		// TODO Set an "optimal" tile map size based on number of frames and framesizes.
 		// If they're modified all bitmaps need to be removed
-		/* Failed attempt:
 		var maxTilesPerRow = Math.floor( MAX_TILE_MAP_WIDTH / _maxRect.width );
 		var totalTiles = 0;
 		for( e in _effects )
@@ -164,13 +166,12 @@ class TileMap {
 			_tileMapWidth = MAX_TILE_MAP_WIDTH;
 			_tileMapHeight = Std.int( rowsNeeded * _maxRect.height );
 		}
-		*/
 			
-		_tileMapWidth = 480;
-		_tileMapHeight = 480;
+		//_tileMapWidth = 480;
+		//_tileMapHeight = 480;
 		
 		// Calculate some MapInfo with the current sizes
-		_mapInfo = new MapInfo( Math.ceil( _tileMapWidth / _maxRect.width ), Math.ceil( _tileMapHeight / _maxRect.height ) );
+		_mapInfo = new MapInfo( Math.floor( _tileMapWidth / _maxRect.width ), Math.floor( _tileMapHeight / _maxRect.height ) );
 		trace( "Updating MapInfo: " + _mapInfo + " TileMap Size:" + _tileMapWidth + "x" + _tileMapHeight );
 		
 		// Create a temporary bitmap, if we haven't already, on which we write the effects and then copy onto the final bitmaps
@@ -192,7 +193,7 @@ class TileMap {
 			update();
 		}
 		
-		_totalFrames = _currentFrame;
+		_totalFrames = _currentFrame - 1;
 		
 		// Now it's ok to reset the tile rect
 		rect = _maxRect.clone();
@@ -354,9 +355,9 @@ class TileMap {
 				if( e.matrix == null ) 
 					e.matrix = new flash.geom.Matrix();
 				//trace( "Rotate: " + degree );
-				// TODO This needs to be concatenated or if it's combined with a scale it wont work!
-				e.matrix.identity();
-				e.matrix.rotate( theta );
+				var m = new flash.geom.Matrix();
+				m.rotate( theta );
+				e.matrix.concat( m );
 				var tmp = getTransformBounds( e.matrix );
 				if( tmp.width > _maxRect.width || tmp.height > _maxRect.height ) {
 					if( tmp.width > _maxRect.width ) _maxRect.width = tmp.width;
@@ -364,11 +365,13 @@ class TileMap {
 					_resized = true;
 				}
 			
-			case Scale( sx , sy ):
+			case Scale( sx , sy ):			
+				if( sy == null ) 
+					sy = sx;
 				var from = new flash.geom.Matrix();
 				var to = new flash.geom.Matrix();
 				to.scale( sx , sy );
-				trace( "Scale: " + from + " - " + to );
+				//trace( "Scale: " + from + " - " + to );
 				// TODO Does this really have to be untyped?
 				untyped e.currentEffect = Transform( from , to );
 				calcEffect( e , step , f , true );
@@ -384,7 +387,7 @@ class TileMap {
 				if( e.matrix == null ) 
 					e.matrix = new flash.geom.Matrix();
 				interpolateMatrix( e.matrix , from , to , f * step );
-				trace( "Step: " + ( f * step ) + " Frame: " + f + " Interpolated:" + e.matrix );
+				//trace( "Step: " + ( f * step ) + " Frame: " + f + " Interpolated:" + e.matrix );
 				var tmp = getTransformBounds( e.matrix );
 				if( tmp.width > _maxRect.width || tmp.height > _maxRect.height ) {
 					if( tmp.width > _maxRect.width ) _maxRect.width = tmp.width;
@@ -506,6 +509,7 @@ class TileMap {
 		}
 		_tmp.fillRect( _maxRect , 0x0 );
 		_tmp.draw( _source , m , effect.colorTransform , null , null , smoothing );
+		_tmp.applyFilter( _tmp , _maxRect , ZERO_POINT , SMOOTH_BLUR );
 		var frame = getFrame( effect.key , _currentFrame - effect.startFrame );
 		var bitmap = getBitmap( _bitmapIndex );
 		bitmap.copyPixels( _tmp , _maxRect , frame );

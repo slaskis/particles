@@ -1,16 +1,16 @@
 package particles;
 
-import particles.VectorArray;
+//import particles.VectorArray;
 
 class ParticlePool {
 	
-	var _original : Particle;
+	var _originals : Array<Particle>;
 	var _available : Int;
 	var _growthRate : Int;
 	var _pool : Array<Particle>;
 	
-	public function new( original : Particle , ?growthRate : Int = 0x10 ) {
-		_original = original;
+	public function new( originals : Array<Particle> , ?growthRate : Int = 0x10 ) {
+		_originals = originals;
 		_growthRate = growthRate;
 		_pool = new Array<Particle>();
 	}
@@ -18,7 +18,7 @@ class ParticlePool {
 	public function retrieve() {
 		if( _available == 0 ) {
 			for( i in 0..._growthRate )
-				_pool.push( _original.clone() );
+				_pool.push( _originals[ Std.int( Math.random() * ( _originals.length - .01 ) ) ].clone() );
 			_available += _growthRate;
 		}
 		_available--;

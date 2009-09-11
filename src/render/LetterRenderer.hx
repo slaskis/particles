@@ -48,10 +48,11 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 		var t = haxe.Timer.stamp();
 		for( i in _charPos..._chars.length ) {			
 			var char = _chars.charAt( i );
-			_maps.set( char , new RotatingLetterMap( new Letter( _format , char ) , Combine( [ Tint( 0x2C1840 ) , Rotation( 180 + Math.random() * 180 ) ] ) ) );
+			var effect = Combine( [ Scale( Math.random() * 1.5 ) , Rotation( 180 + Math.random() * 180 ) ] );
+			_maps.set( char , new RotatingLetterMap( new Letter( _format , char ) , effect ) );
 			if( haxe.Timer.stamp() - t > FRAME_TIME ) {
-				_charPos = i;
 				// Wait one frame and try again
+				_charPos = i;
 				_waiter.addEventListener( flash.events.Event.ENTER_FRAME , createLetters );
 				return;
 			}
@@ -78,7 +79,10 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 			l = _maps.get( _chars.charAt( Std.int( Math.random() * _chars.length ) ) );
 			_letters.set( Std.string( p.id ) , l );
 		}
-		var bmp = l.get( "rotation" , p.lifetime );
+		// Some play backwards, some forwards
+//		var frame = ( p.id & 1 == 0 ) ? p.lifetime : l.frames - p.lifetime;
+		var frame = Std.int( p.z );
+		var bmp = l.get( "rotation" , frame );
 		_point.x = p.x - l.width;
 		_point.y = p.y - l.height;
 		copyPixels( bmp , l.rect , _point , null , null , true );
@@ -120,8 +124,10 @@ class RotatingLetterMap extends particles.TileMap {
 	public var height : Float;
 	public var rotation : Int;
 	public var letter : Letter;
+	public var frames : Int;
 	public function new( letter : Letter , effect : TileEffect , frames = 60 ) {
 		rotation = 0;
+		this.frames = frames;
 		smoothing = true;
 		this.letter = letter;
 		super( letter , letter.width , letter.height );

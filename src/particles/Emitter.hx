@@ -4,8 +4,6 @@ enum EmitterType {
 	Custom( vxMin : Float , vxMax : Float , vyMin : Float , vyMax : Float , vzMin : Float , vzMax : Float );
 	Pour( spread : Float );
 }
-import particles.VectorArray;
-
 class Emitter {
 	
 	public var type : EmitterType;
@@ -14,22 +12,28 @@ class Emitter {
 	public var z : Float;
 	public var maxLifetime : Int;
 	public var maxParticles : Int;
-	public var particlesPerFrame : Int;
-	// TODO Would probably be better with a particle-by-second instead of particles-per-frame
+	public var particlesPerUpdate : Float;
 	
 	var _pool : ParticlePool;
 	var _particles : de.polygonal.ds.DLL<Particle>;
 	var _count : Int;
+	var _particlesToEmit : Float;
 	
-	public function new( type : EmitterType , particle : Particle , maxLifetime : Int , maxParticles : Int , particlesPerFrame : Int = 1 ) {
+	public function new( type : EmitterType , originals : Array<Particle> , maxLifetime : Int , maxParticles : Int , particlesPerUpdate : Float = 1 ) {
 		this.type = type;
 		this.maxParticles = maxParticles;
 		this.maxLifetime = maxLifetime;
-		this.particlesPerFrame = particlesPerFrame;
-		var particle = particle.clone();
-		particle.onRemove = removeParticle;
-		_pool = new ParticlePool( particle , maxParticles );
+		this.particlesPerUpdate = particlesPerUpdate;
+		
+		var styles = new Array<Particle>();
+		for( o in originals ) {
+			var p = o.clone();
+			p.onRemove = removeParticle;
+			styles.push( p );
+		}
+		_pool = new ParticlePool( styles , maxParticles );
 		_particles = new de.polygonal.ds.DLL<Particle>();
+		_particlesToEmit = 0.;
 		_count = 0;
 		x = y = z = 0.;
 	}
@@ -42,7 +46,8 @@ class Emitter {
 	
 	public function emit() {
 		if( _count < maxParticles ) {
-			for( i in 0...particlesPerFrame ) {
+			_particlesToEmit += particlesPerUpdate;
+			for( i in 0...Std.int( _particlesToEmit ) ) {
 				var p = _pool.retrieve();
 				p.x = x;
 				p.y = y;
@@ -54,10 +59,12 @@ class Emitter {
 						p.vz = vzMin + Math.random() * ( vzMax - vzMin );
 					case Pour( spread ):
 						p.vx = ( spread * -.5 ) + Math.random() * ( spread + spread );
+						p.vz = ( spread * -.5 ) + Math.random() * ( spread + spread );
 				}
 				
 				_particles.append( p );
 				_count++;
+				_particlesToEmit--;
 				
 				//trace( "Added a particle " + p.id + " lifetime: " + p.lifetime + " now has " + _count );
 				if( _count >= maxParticles )

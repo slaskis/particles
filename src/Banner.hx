@@ -6,9 +6,9 @@ import render.LetterRenderer;
 
 class Banner extends flash.display.Sprite {
 	
-	static inline var NUM_PARTICLES : Int = 300;
+	static inline var NUM_PARTICLES : Int = 30;
 	static inline var EXPECTED_FPS : Float = 1000 / 30;
-	static var TEXT_FORMAT : flash.text.TextFormat = new flash.text.TextFormat( "RockwellExtraBold" , 36 , 0xF4BE1D );
+	public static var TEXT_FORMAT : flash.text.TextFormat = new flash.text.TextFormat( "RockwellExtraBold" , 36 , 0xF4BE1D );
 	
 	var _tf : flash.text.TextField;
 	var _text : String;
@@ -17,27 +17,33 @@ class Banner extends flash.display.Sprite {
 	var _lastTime : Float;
 	var _repeller : EffectPoint;
 	var _tweens : Array<Dynamic>;
+	var _width : Int;
+	var _height : Int;
+	var _timeout : Int;
 	
-	public function new() super()
-	
-	public function init() {
-		
+	public function new() {
+		super();
+		_width = 800;
+		_height = 600;
+		_timeout = 3000; // ms
 		_text = "Café Opera 
 har bytt till 
 en godare 
 irish coffee. 
 Boka drink- 
 bord här.  ";
-		
+	}
+	
+	public function init() {
 		var chars = "abcdefghijklmnopqrstuvwxyzåäö0123456789";
-		_renderer = new LetterRenderer( NUM_PARTICLES , chars , 800 , 600 , TEXT_FORMAT );
+		_renderer = new LetterRenderer( NUM_PARTICLES , chars , _width , _height , TEXT_FORMAT );
 		_renderer.addEventListener( flash.events.Event.COMPLETE , onLettersDone );
 		_renderer.createLetters();
 		
 		addChild( new flash.display.Bitmap( _renderer ) );
 
 		var gravity = new particles.Force( 0 , 0.97 , 0 );
-		_repeller = new EffectPoint( Repel( .5 , 100 ) , ( stage.stageWidth / 2 ) + 5 , stage.stageHeight + 50 , 0 );
+		_repeller = new EffectPoint( Repel( .5 , 100 ) , ( _width / 2 ) + 5 , _height + 50 , 0 );
 		var bounds = {
 			minX: 0.,
 			maxX: stage.stageWidth + 0.,
@@ -47,22 +53,28 @@ bord här.  ";
 			maxZ: 500.
 		}
 		
-		var p = new Particle();
-		p.edgeBehavior = Remove;
-		p.bounds = bounds;
-		p.friction = 0.03;
-		p.addForce( gravity );
-		p.addPoint( _repeller );
+		var p1 = new Particle();
+		p1.edgeBehavior = Remove;
+		p1.bounds = bounds;
+		p1.friction = 0.03;
+		p1.addForce( gravity );
+		p1.addPoint( _repeller );
 		
-		_emitter = new Emitter( Pour( 1 ) , p , 60 , NUM_PARTICLES );
-		_emitter.x = stage.stageWidth / 2;
-		_emitter.y = 50;
+		var p2 = new Particle();
+		p2.edgeBehavior = Remove;
+		p2.bounds = bounds;
+		p2.friction = 0.03;
+		p2.addForce( gravity );
+		
+		_emitter = new Emitter( Pour( 1 ) , [ p1 , p2 ] , 60 , NUM_PARTICLES , .3 );
+		_emitter.x = _width / 2;
+		_emitter.y = _height / 15;
 	}
 
 	function onLettersDone(_) {
 		_lastTime = haxe.Timer.stamp();
 		addEventListener( flash.events.Event.ENTER_FRAME , update );
-		haxe.Timer.delay( showText , 3000 );
+		haxe.Timer.delay( showText , _timeout );
 		#if debug
 		addChild( new flash.display.Bitmap( _renderer.debug() ) );
 		addChild( new flash.display.Bitmap( _renderer.debugMap.letter ) ).x = 20;
@@ -80,47 +92,37 @@ bord här.  ";
 		_tf.autoSize = flash.text.TextFieldAutoSize.LEFT;
 		_tf.defaultTextFormat = TEXT_FORMAT;
 		_tf.htmlText = _text;
-		_tf.x = stage.stageWidth / 2 - _tf.width / 2;
-		_tf.y = stage.stageHeight / 2 - _tf.height / 2;
+		_tf.x = _width / 2 - _tf.width / 2;
+		_tf.y = _height / 2 - _tf.height / 2;
 		//addChild( _tf );
 		
 		// Create alot of tweening copies
 		_tweens = new Array<Dynamic>();
 		for( i in 0..._tf.text.length ) {
 			if( !StringTools.isSpace( _tf.text , i ) ) {
-				var char = _tf.text.charAt( i );
-				var ctf = createTextField( char );
-				ctf.x = stage.stageWidth / 2;
-				ctf.y = stage.stageHeight;
-				ctf.alpha = 0;
-				ctf.rotation = -180 + Math.random() * 360;
+				var l = new Letter( _tf.text.charAt( i ) );
+				l.x = _width / 2;
+				l.y = _height;
+				l.alpha = 0;
+				l.rotation = -360 + Math.random() * 720;
 				var pos = _tf.getCharBoundaries( i );
-				var targetX = _tf.x + pos.x - 2;
-				var targetY = _tf.y + pos.y - 2;
-				_tweens.push( function() {
-					var dx = targetX - ctf.x;
-					var dy = targetY - ctf.y;
-					ctf.x += dx / 5;
-					ctf.y += dy / 4;
-					ctf.rotation += ( 0 - ctf.rotation ) / 4;
-					ctf.alpha += ( 1 - ctf.alpha ) / 10;
-					if( ctf.alpha > .9 )
-						ctf.alpha = 1;
-					return ( Math.abs( dx ) < 1 && Math.abs( dy ) < 1 );
-				} );
+				l.targetX = _tf.x + pos.x - 2;
+				l.targetY = _tf.y + pos.y - 2;
+				l.delay = Std.int( Math.random() * 20 );
+				_tweens.push( l.tween );
+				addChild( l );
 			}
 		}
 		
 		var lastCharPosition = _tf.getCharBoundaries( _text.length - 1 );
 		var arr = flash.Lib.attach( "Arrow" );
-		var targetX = _tf.x + lastCharPosition.x + lastCharPosition.width;
-		var targetY = _tf.y + lastCharPosition.y + 9;
-		arr.x = stage.stageWidth / 2;
-		arr.y = stage.stageHeight;
+		arr.x = _tf.x + lastCharPosition.x + lastCharPosition.width;
+		arr.y = _tf.y + lastCharPosition.y + 9;
 		arr.alpha = 0;
+		var delay = 40;
 		_tweens.push( function() {
-			arr.x += ( targetX - arr.x ) / 2;
-			arr.y += ( targetY - arr.y ) / 2;
+			if( --delay > 0 ) 
+				return false;
 			arr.alpha += ( 1 - arr.alpha ) / 10;
 			if( arr.alpha > .9 )
 				arr.alpha = 1;
@@ -130,27 +132,6 @@ bord här.  ";
 		
 		
 		_emitter.maxParticles = 0;
-	}
-	
-	function createTextField( str ) {
-		var tf = new flash.text.TextField();
-		tf.antiAliasType = flash.text.AntiAliasType.ADVANCED;
-		tf.selectable = false;
-		tf.embedFonts = true;
-		tf.autoSize = flash.text.TextFieldAutoSize.LEFT;
-		tf.defaultTextFormat = TEXT_FORMAT;
-		tf.htmlText = str;
-		return addChild( tf );
-	}
-	
-	function extractCharacters( str ) {
-		var chars = "";
-		for( i in 0...str.length ) {
-			var char = str.charAt( i );
-			if( chars.indexOf( char ) == -1 )
-				chars += char;
-		}
-		return chars;
 	}
 	
 	function update(_) {
@@ -207,8 +188,8 @@ bord här.  ";
         fdisplay.defaultTextFormat = tf;
         fdisplay.selectable = false;
         fdisplay.text = 'Waiting...';
-        fdisplay.y = 600 - fdisplay.height;
-        fdisplay.x = 800 - fdisplay.width;
+        fdisplay.x = _width - fdisplay.width;
+        fdisplay.y = _height - fdisplay.height;
         fdisplay.opaqueBackground = 0x000000;
         addChild( fdisplay );
     }
@@ -223,6 +204,58 @@ bord här.  ";
 		var m = new Banner();
 		flash.Lib.current.addChild( m );
 		m.init();
+	}
+}
+
+class Letter extends flash.text.TextField {
+	
+	static inline var DIFF_PI : Float = Math.PI - Math.PI * 2;
+	static inline var FIX_PI : Float = 1 / Math.sin( Math.PI );
+	
+	public var targetX : Float;
+	public var targetY : Float;
+	public var wave : Float;
+	var _start : Float;
+	public var delay : Int;
+	
+	public function new( char ) {
+		super();
+		antiAliasType = flash.text.AntiAliasType.ADVANCED;
+		selectable = false;
+		embedFonts = true;
+		autoSize = flash.text.TextFieldAutoSize.LEFT;
+		defaultTextFormat = Banner.TEXT_FORMAT;
+		htmlText = char;
+		cacheAsBitmap = true;
+		wave = Math.random() * 20;
+	}
+	
+	public function tween() {
+		if( Math.isNaN( _start ) ) {
+			_start = y;
+		}
+			
+		if( --delay > 0 ) 
+			return false;
+		
+		var dx = targetX - x;
+		var dy = targetY - y;
+		var progress = ( y - _start ) / ( targetY - _start );
+		var pos = ( progress * 2 * Math.PI ) - Math.PI;
+		var cx = wave * Math.sin( pos );
+		x = targetX + cx;
+		y += dy * ( progress * .3 + .001 );
+		rotation += ( 0 - rotation ) / 4;
+		//scaleX = scaleY = -Math.cos( pos );
+		alpha += ( 1 - alpha ) / 1.05;
+		var done = Math.abs( progress ) == 1;
+		if( done ) {
+			x = targetX;
+			y = targetY;
+			rotation = 0;
+			alpha = scaleX = scaleY = 1;
+		}
+		return done;
 	}
 }
 

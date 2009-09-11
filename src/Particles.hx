@@ -89,7 +89,7 @@ class Particles extends flash.display.Sprite {
 			_particles[i] = p;
 		}
 		*/
-		_emitter = new particles.Emitter( Pour( 2 ) , p , 60 , 80 );
+		_emitter = new particles.Emitter( Pour( 2 ) , [p] , 60 , 80 );
 		
 		
 		addTextBoxOverlay();
