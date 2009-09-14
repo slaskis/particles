@@ -143,7 +143,7 @@ bord här.  ";
 		} );
 		addChild( arr );
 		
-		
+		// Stop the emitting...
 		_emitter.maxParticles = 0;
 	}
 	
@@ -217,13 +217,33 @@ bord här.  ";
 		var m = new Banner();
 		flash.Lib.current.addChild( m );
 		m.init();
+		
+		var c = new flash.display.Sprite();
+		c.graphics.beginFill( 0x0 , 0 );
+		c.graphics.drawRect( 0 , 0 , flash.Lib.current.stage.stageWidth , flash.Lib.current.stage.stageHeight );
+		c.buttonMode = true;
+		c.addEventListener( flash.events.MouseEvent.CLICK , function(_) {
+			flash.Lib.getURL( new flash.net.URLRequest( getClickTag() ) );
+		} );
+		flash.Lib.current.addChild( c );
+	}
+	
+	static function getClickTag() {
+		var cTag = "";
+		for( param in Reflect.fields( flash.Lib.current.root.loaderInfo.parameters ) ) {
+			if( param.toLowerCase() == "clicktag" ) {
+				cTag = param;
+				break;
+			}
+		}
+		return cTag;
 	}
 }
 
 class Letter extends flash.text.TextField {
 	
-	static inline var DIFF_PI : Float = Math.PI - Math.PI * 2;
-	static inline var FIX_PI : Float = 1 / Math.sin( Math.PI );
+	static inline var DIFF_PI = Math.PI - Math.PI * 2;
+	static inline var FIX_PI = 1 / Math.sin( Math.PI );
 	static var ID = 0;
 	
 	public var targetX : Float;
