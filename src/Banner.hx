@@ -6,7 +6,7 @@ import render.LetterRenderer;
 
 class Banner extends flash.display.Sprite {
 	
-	static inline var NUM_PARTICLES : Int = 30;
+	static var NUM_PARTICLES : Int = 60;
 	#if slow
 	static inline var EXPECTED_FPS : Float = 1000 / 18;
 	#else
@@ -24,23 +24,43 @@ class Banner extends flash.display.Sprite {
 	var _width : Int;
 	var _height : Int;
 	var _timeout : Int;
+	var _ppu : Float;
 	
 	public function new() super()
 	
 	public function init() {
-		var size = ( root.loaderInfo.parameters.size != null ) ? root.loaderInfo.parameters.size.split( "x" ) : [ Std.string( stage.stageWidth ) , Std.string( stage.stageHeight ) ];
-		_width = Std.parseInt( size[0] );
-		_height = Std.parseInt( size[1] );
-		
-		_timeout = ( root.loaderInfo.parameters.timeout != null ) ? Std.parseInt( root.loaderInfo.parameters.timeout ) : 3000; // ms
-		_text = ( root.loaderInfo.parameters.text != null ) ? root.loaderInfo.parameters.text : "Café Opera 
+		// Set some default values
+		_width = stage.stageWidth;
+		_height = stage.stageHeight;
+		_ppu = .3;
+		_timeout = 3000;
+		_text = "Café Opera 
 har bytt till 
 en godare 
 irish coffee. 
 Boka drink- 
 bord här.  ";
-		if( root.loaderInfo.parameters.textSize != null )
-			TEXT_FORMAT.size = Std.parseFloat( root.loaderInfo.parameters.textSize );
+		
+		// Find values in "flash vars"
+		for( param in Reflect.fields( root.loaderInfo.parameters ) ) {
+			var val : String = untyped root.loaderInfo.parameters[ param ];
+			switch( param ) {
+				case "size":
+					var sizes = val.split( "x" );
+					_width = Std.parseInt( sizes[0] );
+					_height = Std.parseInt( sizes[1] );
+				case "ppu":
+					_ppu = Std.parseInt( val );
+				case "timeout":
+					_timeout = Std.parseInt( val );
+				case "text":
+					_text = val;
+				case "textSize":
+					TEXT_FORMAT.size = Std.parseInt( val );
+				case "numParticles":
+					NUM_PARTICLES = Std.parseInt( val );
+			}
+		}
 		
 		
 		var chars = "abcdefghijklmnopqrstuvwxyzåäö0123456789";
@@ -55,6 +75,7 @@ bord här.  ";
 		#else
 		var gravity = new particles.Force( 0 , 0.97 , 0 );
 		#end
+
 		_repeller = new EffectPoint( Repel( .5 , 100 ) , ( _width / 2 ) + 5 , _height + 50 , 0 );
 		var bounds = {
 			minX: 0.,
@@ -79,7 +100,7 @@ bord här.  ";
 		p2.addForce( gravity );
 		
 //		_emitter = new Emitter( Pour( 2 ) , [ p1 , p2 ] , 60 , NUM_PARTICLES , .3 );
-		_emitter = new Emitter( Custom( -.5 , .5 , 0 , 0 , -3 , 3 ) , [ p1 , p2 ] , 60 , NUM_PARTICLES , .3 );
+		_emitter = new Emitter( Custom( -.5 , .5 , 0 , 0 , -3 , 3 ) , [ p1 , p2 ] , 60 , NUM_PARTICLES , _ppu );
 		_emitter.x = _width / 2;
 		_emitter.y = _height / 15;
 	}
@@ -218,14 +239,17 @@ bord här.  ";
 		flash.Lib.current.addChild( m );
 		m.init();
 		
-		var c = new flash.display.Sprite();
-		c.graphics.beginFill( 0x0 , 0 );
-		c.graphics.drawRect( 0 , 0 , flash.Lib.current.stage.stageWidth , flash.Lib.current.stage.stageHeight );
-		c.buttonMode = true;
-		c.addEventListener( flash.events.MouseEvent.CLICK , function(_) {
-			flash.Lib.getURL( new flash.net.URLRequest( getClickTag() ) );
-		} );
-		flash.Lib.current.addChild( c );
+		var cTag = getClickTag();
+		if( cTag != "" ) {
+			var c = new flash.display.Sprite();
+			c.graphics.beginFill( 0x0 , 0 );
+			c.graphics.drawRect( 0 , 0 , flash.Lib.current.stage.stageWidth , flash.Lib.current.stage.stageHeight );
+			c.buttonMode = true;
+			c.addEventListener( flash.events.MouseEvent.CLICK , function(_) {
+				flash.Lib.getURL( new flash.net.URLRequest( getClickTag() ) );
+			} );
+			flash.Lib.current.addChild( c );
+		}
 	}
 	
 	static function getClickTag() {
