@@ -38,6 +38,8 @@ class EffectInfo {
 	public var currentEffect : TileEffect;
 	public var colorTransform : flash.geom.ColorTransform;
 	public var matrix : flash.geom.Matrix;
+	public var filter : flash.filters.BitmapFilter;
+	
 	public function new( key , start , end , frames , effect ) {
 		this.key = key;
 		this.startFrame = start;
@@ -73,7 +75,7 @@ class TileMap {
 	public static inline var MAX_TILE_MAP_WIDTH : Int = 4095; 
 	public static inline var MAX_TILE_MAP_HEIGHT : Int = 4095;
 	#else
-	public static inline var MAX_TILE_MAP_WIDTH : Int = 2880;
+	public static inline var MAX_TILE_MAP_WIDTH : Int = 500;
 	public static inline var MAX_TILE_MAP_HEIGHT : Int = 2880;
 	#end
 	
@@ -162,10 +164,12 @@ class TileMap {
 			_tileMapWidth = Std.int( totalTiles * _maxRect.width );
 			_tileMapHeight = Std.int( _maxRect.height );
 		} else {
-			var rowsNeeded = Math.ceil( maxTilesPerRow / totalTiles );
+			var rowsNeeded = Math.ceil( totalTiles / maxTilesPerRow );
 			_tileMapWidth = MAX_TILE_MAP_WIDTH;
 			_tileMapHeight = Std.int( rowsNeeded * _maxRect.height );
 		}
+		
+		trace( "maxTilesPerRow:" + maxTilesPerRow + ", " + totalTiles + ", y:" + Math.floor( _tileMapHeight / _maxRect.height ));
 			
 		//_tileMapWidth = 480;
 		//_tileMapHeight = 480;
@@ -427,7 +431,11 @@ class TileMap {
 				trace( "Clip: " + rect );
 			
 			case Filter( filter ):
-				// run applyFilter() after each draw
+				// TODO Create a "resetted" filter of the right type
+				var from = new flash.filters.BlurFilter( 0 , 0 );
+				if( e.filter == null ) 
+					e.filter = from.clone();
+				interpolateFilter( e.filter , from , filter , step * f );
 				// TODO How should the variables be interpolated? blurX,blurY etc
 				// This might be interesting: http://www.senocular.com/flash/actionscript.php?file=ActionScript_3.0/com/senocular/gyro/InterpolateBevelFilter.as
 			default:
@@ -465,6 +473,39 @@ class TileMap {
 		ri.bottom = r1.bottom + ( r2.bottom - r1.bottom ) * t;
 		ri.left = r1.left + ( r2.left - r1.left ) * t;
 		ri.right = r1.right + ( r2.right - r1.right ) * t;
+	}
+	
+	/* Will be used by the ConvolutionFilter
+	inline function interpolateColor( color1 : UInt, color2 : UInt , t : Float ) {
+		var a1 = (color1 >> 32) & 0xFF;
+		var r1 = (color1 >> 16) & 0xFF;
+		var g1 = (color1 >> 8) & 0xFF;
+		var b1 = color1 & 0xFF;
+		var a2 = (color2 >> 32) & 0xFF;
+		var r2 = (color2 >> 16) & 0xFF;
+		var g2 = (color2 >> 8) & 0xFF;
+		var b2 = color2 & 0xFF;
+		return (a1+(a2-a1)*t) << 32 | (r1+(r2-r1)*t) << 16 | (g1+(g2-g1)*t) << 8 | (b1+(b2-b1)*t);
+	}
+	*/
+	
+	inline function interpolateFilter( fi : flash.filters.BitmapFilter , f1 : flash.filters.BitmapFilter , f2 : flash.filters.BitmapFilter , t : Float ) {
+		if( Type.getClassName( Type.getClass( fi ) ) != Type.getClassName( Type.getClass( f1 ) ) || Type.getClassName( Type.getClass( fi ) ) != Type.getClassName( Type.getClass( f2 ) ) )
+			throw "Filters has to be of the same type.";
+			
+		switch( Type.getClassName( Type.getClass( fi ) ).split( "." ).pop() ) {
+			case "BlurFilter":	
+				interpolateFields( [ "blurX","blurY","quality" ] , t , fi , f1 , f2 );
+		}
+	}
+	
+	inline function interpolateFields( fields : Array<String> , t : Float , o0 , o1 , o2 ) {
+		for( f in fields ) {
+			var s = Reflect.field( o1 , f );
+			var e = Reflect.field( o2 , f );
+			if( s != e )
+				Reflect.setField( o0 , f , s + ( e - s ) * t );
+		}
 	}
 	
 	inline function getTransformBounds( trans : flash.geom.Matrix ) {
@@ -509,7 +550,9 @@ class TileMap {
 		}
 		_tmp.fillRect( _maxRect , 0x0 );
 		_tmp.draw( _source , m , effect.colorTransform , null , null , smoothing );
-		_tmp.applyFilter( _tmp , _maxRect , ZERO_POINT , SMOOTH_BLUR );
+		if( effect.filter != null ) 
+			_tmp.applyFilter( _tmp , _maxRect , ZERO_POINT , effect.filter );
+		//_tmp.applyFilter( _tmp , _maxRect , ZERO_POINT , SMOOTH_BLUR );
 		var frame = getFrame( effect.key , _currentFrame - effect.startFrame );
 		var bitmap = getBitmap( _bitmapIndex );
 		bitmap.copyPixels( _tmp , _maxRect , frame );

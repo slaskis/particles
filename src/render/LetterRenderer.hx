@@ -48,7 +48,7 @@ class LetterRenderer extends flash.display.BitmapData, implements flash.events.I
 		var t = haxe.Timer.stamp();
 		for( i in _charPos..._chars.length ) {			
 			var char = _chars.charAt( i );
-			var effect = Combine( [ Scale( Math.random() * 1.5 ) , Rotation( 180 + Math.random() * 180 ) ] );
+			var effect = Combine( [ Scale( Math.random() * 1.5 ) , Rotation( 180 + Math.random() * 180 ) , Filter( new flash.filters.BlurFilter() ) ] );
 			_maps.set( char , new RotatingLetterMap( new Letter( _format , char ) , effect ) );
 			if( haxe.Timer.stamp() - t > FRAME_TIME ) {
 				// Wait one frame and try again

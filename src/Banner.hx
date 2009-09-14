@@ -7,8 +7,12 @@ import render.LetterRenderer;
 class Banner extends flash.display.Sprite {
 	
 	static inline var NUM_PARTICLES : Int = 30;
+	#if slow
+	static inline var EXPECTED_FPS : Float = 1000 / 18;
+	#else
 	static inline var EXPECTED_FPS : Float = 1000 / 30;
-	public static var TEXT_FORMAT : flash.text.TextFormat = new flash.text.TextFormat( "RockwellExtraBold" , 36 , 0xF4BE1D );
+	#end
+	public static var TEXT_FORMAT = new flash.text.TextFormat( "RockwellExtraBold" , 36 , 0xF4BE1D );
 	
 	var _tf : flash.text.TextField;
 	var _text : String;
@@ -21,20 +25,24 @@ class Banner extends flash.display.Sprite {
 	var _height : Int;
 	var _timeout : Int;
 	
-	public function new() {
-		super();
-		_width = 800;
-		_height = 600;
-		_timeout = 3000; // ms
-		_text = "Café Opera 
+	public function new() super()
+	
+	public function init() {
+		var size = ( root.loaderInfo.parameters.size != null ) ? root.loaderInfo.parameters.size.split( "x" ) : [ Std.string( stage.stageWidth ) , Std.string( stage.stageHeight ) ];
+		_width = Std.parseInt( size[0] );
+		_height = Std.parseInt( size[1] );
+		
+		_timeout = ( root.loaderInfo.parameters.timeout != null ) ? Std.parseInt( root.loaderInfo.parameters.timeout ) : 3000; // ms
+		_text = ( root.loaderInfo.parameters.text != null ) ? root.loaderInfo.parameters.text : "Café Opera 
 har bytt till 
 en godare 
 irish coffee. 
 Boka drink- 
 bord här.  ";
-	}
-	
-	public function init() {
+		if( root.loaderInfo.parameters.textSize != null )
+			TEXT_FORMAT.size = Std.parseFloat( root.loaderInfo.parameters.textSize );
+		
+		
 		var chars = "abcdefghijklmnopqrstuvwxyzåäö0123456789";
 		_renderer = new LetterRenderer( NUM_PARTICLES , chars , _width , _height , TEXT_FORMAT );
 		_renderer.addEventListener( flash.events.Event.COMPLETE , onLettersDone );
@@ -42,13 +50,17 @@ bord här.  ";
 		
 		addChild( new flash.display.Bitmap( _renderer ) );
 
+		#if slow
+		var gravity = new particles.Force( 0 , 1.97 , 0 );
+		#else
 		var gravity = new particles.Force( 0 , 0.97 , 0 );
+		#end
 		_repeller = new EffectPoint( Repel( .5 , 100 ) , ( _width / 2 ) + 5 , _height + 50 , 0 );
 		var bounds = {
 			minX: 0.,
-			maxX: stage.stageWidth + 0.,
+			maxX: _width + 0.,
 			minY: 0.,
-			maxY: stage.stageHeight + 0.,
+			maxY: _height + 0.,
 			minZ: 0.,
 			maxZ: 500.
 		}
@@ -66,7 +78,8 @@ bord här.  ";
 		p2.friction = 0.03;
 		p2.addForce( gravity );
 		
-		_emitter = new Emitter( Pour( 1 ) , [ p1 , p2 ] , 60 , NUM_PARTICLES , .3 );
+//		_emitter = new Emitter( Pour( 2 ) , [ p1 , p2 ] , 60 , NUM_PARTICLES , .3 );
+		_emitter = new Emitter( Custom( -.5 , .5 , 0 , 0 , -3 , 3 ) , [ p1 , p2 ] , 60 , NUM_PARTICLES , .3 );
 		_emitter.x = _width / 2;
 		_emitter.y = _height / 15;
 	}
@@ -143,7 +156,7 @@ bord här.  ";
 		var i = 0;
 		_renderer.before();
 		for( p in _emitter.emit() ) {
-			if( p.update( dt ) )
+			if( p.update() )
 				_renderer.render( p );
 			i++;
 		}
@@ -211,15 +224,20 @@ class Letter extends flash.text.TextField {
 	
 	static inline var DIFF_PI : Float = Math.PI - Math.PI * 2;
 	static inline var FIX_PI : Float = 1 / Math.sin( Math.PI );
+	static var ID = 0;
 	
 	public var targetX : Float;
 	public var targetY : Float;
 	public var wave : Float;
-	var _start : Float;
 	public var delay : Int;
+	
+	var _start : Float;
+	var _id : Int;
+	var _blur : Float;
 	
 	public function new( char ) {
 		super();
+		_id = ID++;
 		antiAliasType = flash.text.AntiAliasType.ADVANCED;
 		selectable = false;
 		embedFonts = true;
@@ -227,13 +245,13 @@ class Letter extends flash.text.TextField {
 		defaultTextFormat = Banner.TEXT_FORMAT;
 		htmlText = char;
 		cacheAsBitmap = true;
-		wave = Math.random() * 20;
+		wave = -100 + Math.random() * 200;
+		_blur = 20;
 	}
 	
-	public function tween() {
-		if( Math.isNaN( _start ) ) {
+	public inline function tween() {
+		if( Math.isNaN( _start ) )
 			_start = y;
-		}
 			
 		if( --delay > 0 ) 
 			return false;
@@ -244,16 +262,20 @@ class Letter extends flash.text.TextField {
 		var pos = ( progress * 2 * Math.PI ) - Math.PI;
 		var cx = wave * Math.sin( pos );
 		x = targetX + cx;
-		y += dy * ( progress * .3 + .001 );
+		y += dy * ( progress * .5 + .03 );
 		rotation += ( 0 - rotation ) / 4;
-		//scaleX = scaleY = -Math.cos( pos );
+		var z = Math.cos( pos );
+		_blur += ( 0 - _blur ) / 8;
+		scaleX = scaleY = -z;
+		filters = [ new flash.filters.BlurFilter( _blur , _blur ) ];
 		alpha += ( 1 - alpha ) / 1.05;
-		var done = Math.abs( progress ) == 1;
+		var done = Math.abs( progress ) > .995;
 		if( done ) {
 			x = targetX;
 			y = targetY;
 			rotation = 0;
 			alpha = scaleX = scaleY = 1;
+			filters = [];
 		}
 		return done;
 	}
