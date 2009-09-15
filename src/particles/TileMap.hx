@@ -75,7 +75,7 @@ class TileMap {
 	public static inline var MAX_TILE_MAP_WIDTH : Int = 4095; 
 	public static inline var MAX_TILE_MAP_HEIGHT : Int = 4095;
 	#else
-	public static inline var MAX_TILE_MAP_WIDTH : Int = 500;
+	public static inline var MAX_TILE_MAP_WIDTH : Int = 2880;
 	public static inline var MAX_TILE_MAP_HEIGHT : Int = 2880;
 	#end
 	
@@ -576,8 +576,10 @@ class TileMap {
 	
 	
 	public function getBitmap( index ) {
-		if( _bitmaps[ index ] == null ) 
+		if( _bitmaps[ index ] == null ) {
+			trace( "Creating a new bitmap: " + _tileMapWidth + "x" + _tileMapHeight );
 			_bitmaps[ index ] = new flash.display.BitmapData( _tileMapWidth , _tileMapHeight , true , 0x0 );
+		}
 		return _bitmaps[ index ];
 	}
 	

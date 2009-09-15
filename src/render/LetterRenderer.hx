@@ -3,145 +3,148 @@ package render;
 import particles.TileMap;
 import particles.VectorArray;
 
-class LetterRenderer extends flash.display.BitmapData, implements flash.events.IEventDispatcher , implements IRenderer {
+class LetterRenderer extends flash.display.Sprite, implements flash.events.IEventDispatcher , implements IRenderer {
 	
-	static inline var FRAME_TIME : Float = .5;
-	
-	var _clear : flash.display.BitmapData;
 	var _format : flash.text.TextFormat;
-	var _point : flash.geom.Point;
-	var _zero : flash.geom.Point;
+	var _letters : Hash<Letter>;
+	var _maps : Hash<Letter>;
 	var _chars : String;
-	var _letters : Hash<RotatingLetterMap>;
-	var _rot : Int;
-	var _maps : Hash<RotatingLetterMap>;
-	var _charPos : Int;
-	var _initTime : Float;
 	var _count : Int;
-	var _event : flash.events.EventDispatcher;
-	var _waiter : flash.display.Sprite;
 	
 	#if debug
-	public function debug()	return debugMap.getBitmap(0)
+	public function debug()	{	
+		var bmp = new flash.display.BitmapData( Std.int( width ) , Std.int( height ) , true , 0x0 );
+		bmp.draw( this );
+		return bmp;
+	}
 	#end
-	public var debugMap : RotatingLetterMap;
 	
-	public function new( count , chars , width , height , ?format ) {
-		super( width, height, true, 0x0 );
-		_event = new flash.events.EventDispatcher( this );
-		_clear = new flash.display.BitmapData( width, height, true, 0x0 );
-		_point = new flash.geom.Point();
-		_zero = new flash.geom.Point();
-		_rot = _charPos = 0;
+	public function new( count , chars , ?format ) {
+		super();
 		_chars = chars;
 		_format = ( format == null ) ? new flash.text.TextFormat( "Arial" , 16 , 0x0 ) : format;
-		_letters = new Hash<RotatingLetterMap>();
-		_maps = new Hash<RotatingLetterMap>();
-		_initTime = haxe.Timer.stamp();
+		_letters = new Hash<Letter>();
+		_maps = new Hash<Letter>();
 		_count = count;
-		_waiter = new flash.display.Sprite();
 	}
 	
-	public function createLetters( ?e : flash.events.Event = null ) {
-		if( e != null )
-			_waiter.removeEventListener( flash.events.Event.ENTER_FRAME , createLetters );
-		var t = haxe.Timer.stamp();
-		for( i in _charPos..._chars.length ) {			
-			var char = _chars.charAt( i );
-			var effect = Combine( [ Scale( Math.random() * 1.5 ) , Rotation( 180 + Math.random() * 180 ) , Filter( new flash.filters.BlurFilter() ) ] );
-			_maps.set( char , new RotatingLetterMap( new Letter( _format , char ) , effect ) );
-			if( haxe.Timer.stamp() - t > FRAME_TIME ) {
-				// Wait one frame and try again
-				_charPos = i;
-				_waiter.addEventListener( flash.events.Event.ENTER_FRAME , createLetters );
-				return;
-			}
-		}
-		debugMap = _maps.get( _chars.charAt(_chars.length - 1) );
-		//trace( "Instantiated letter maps for " + _chars.length + " letters, took: " + ( haxe.Timer.stamp() - _initTime ) + " s" );
-		
+	public function createLetters() {
 		// Tell them we're done
 		dispatchEvent( new flash.events.Event( flash.events.Event.COMPLETE ) );
 	}
 	
 	public inline function clear() {
-		copyPixels( _clear , rect , _zero );
+		for( l in _letters )
+			l.visible = false;
 	}
 	
 	public inline function before() {
-		lock();
 		clear();
 	}
 	
 	public inline function render( p : particles.Particle ) {
 		var l = _letters.get( Std.string( p.id ) );
 		if( l == null ) {
-			l = _maps.get( _chars.charAt( Std.int( Math.random() * _chars.length ) ) );
+			var char = _chars.charAt( Std.int( Math.random() * _chars.length ) );
+			l = Letter.create( _format , char );
 			_letters.set( Std.string( p.id ) , l );
+			trace( "Assigning particle to letter: " + p.id + " " + char );
+			addChild( l );
 		}
-		// Some play backwards, some forwards
-//		var frame = ( p.id & 1 == 0 ) ? p.lifetime : l.frames - p.lifetime;
-		var frame = Std.int( p.z );
-		var bmp = l.get( "rotation" , frame );
-		_point.x = p.x - l.width;
-		_point.y = p.y - l.height;
-		copyPixels( bmp , l.rect , _point , null , null , true );
+		l.x = p.x;
+		l.y = p.y;
+		l.z = p.z;
+		l.rotation += l.rotationChange;
+		
+		if( !p.active )
+			l.dispose();
+		else
+			l.visible = true;
 	}
 
 	public inline function after() {
-		unlock();
 	}
 	
-	public function addEventListener(type : String, listener : Dynamic->Void, ?useCapture : Bool = false, ?priority : Int = 0, ?useWeakReference : Bool = false) _event.addEventListener( type , listener , useCapture , priority , useWeakReference )
-	public function dispatchEvent(event : flash.events.Event) return _event.dispatchEvent( event )
-	public function hasEventListener(type : String) return _event.hasEventListener( type )
-	public function removeEventListener(type : String, listener : Dynamic->Void, ?useCapture : Bool = false) _event.removeEventListener( type , listener , useCapture )
-	public function willTrigger(type : String) return _event.willTrigger( type )
 }
 
-class Letter extends flash.display.BitmapData {
-	public static var _tf : flash.text.TextField;
-	public function new( format : flash.text.TextFormat , char : String ) {
-		if( _tf == null ) {
-			var embed = false;
-			for( f in flash.text.Font.enumerateFonts() )
-				if( f.fontName == format.font )
-					embed = true;
-			_tf = new flash.text.TextField();
-			_tf.embedFonts = embed;
-			_tf.autoSize = flash.text.TextFieldAutoSize.LEFT;
-			_tf.defaultTextFormat = format;
+class Letter extends flash.display.Sprite {
+	
+	static var _pool: Letter;
+	static var _availableInPool : Null<Int>;
+	
+	public static function create( format : flash.text.TextFormat , char : String ) {
+		var pooledObject : Letter;
+		
+		if( _availableInPool == null || _availableInPool == 0 ) {
+			var poolGrowthRate = 0x10;
+			trace( "Expanding pool with " + poolGrowthRate + " objects" );
+			for( i in 0...poolGrowthRate ) {
+				pooledObject = new Letter( format , char );
+				pooledObject._nextInPool = _pool;
+				_pool = pooledObject;		 
+			}
+			_availableInPool += poolGrowthRate;
 		}
-		_tf.text = char.charAt( 0 ); // Just one char/letter plz (probably has issues with unicode)
-		trace( "Creating a Letter of: " + char.charAt( 0 ) + " size: " + _tf.width + "x" + _tf.height );
-		super( Math.ceil( _tf.width ) , Math.ceil( _tf.height ) , true , 0x0 );
-		draw( _tf , null , null , null , null , true );
-	}
-}
-
-class RotatingLetterMap extends particles.TileMap {
-	public var width : Float;
-	public var height : Float;
-	public var rotation : Int;
-	public var letter : Letter;
-	public var frames : Int;
-	public function new( letter : Letter , effect : TileEffect , frames = 60 ) {
-		rotation = 0;
-		this.frames = frames;
-		smoothing = true;
-		this.letter = letter;
-		super( letter , letter.width , letter.height );
-//		add( "rotation" , Combine( [ Alpha( 0 ) , Rotation( 180 + Math.random() * 180 ) ] ) , 60 );
-//		add( "rotation" , Combine( [ Tint( 0x2C1840 ) , Rotation( 180 + Math.random() * 180 ) ] ) , 60 );
-//		add( "rotation" , Rotation( 180 + Math.random() * 180 ) , 60 );
-//		add( "rotation" , Tint( 0xFFFFFF ) , 60 );
-//		add( "rotation" , Alpha( 0 ) , 60 );
-		add( "rotation" , effect , frames );
+		
+		pooledObject = _pool;
+		_pool = pooledObject._nextInPool;
+		--_availableInPool;
+		
+		pooledObject._tf.text = char;
+		pooledObject._tf.setTextFormat( format );
+		
+		return pooledObject;	
 	}
 	
-	override function update() {
-		super.update();
-		width = rect.width * .5;
-		height = rect.height * .5;
+	static function release( l : Letter ) {
+		l._nextInPool = _pool;
+		_pool = l;
+		++_availableInPool;
+	}
+
+	
+	public var z(default,setZ) : Float;
+	public var rotationChange : Float;
+	
+	var _nextInPool : Letter;
+	var _tf : flash.text.TextField;
+	var _blur : flash.filters.BlurFilter;
+	
+	private function new( format : flash.text.TextFormat , char : String ) {
+		super();
+		_tf = new flash.text.TextField();
+		_tf.embedFonts = isEmbedded( format.font );
+		_tf.autoSize = flash.text.TextFieldAutoSize.LEFT;
+		_tf.defaultTextFormat = format;
+		_tf.text = char.charAt( 0 ); // Just one char/letter plz (probably has issues with unicode)
+		_tf.x = -_tf.textWidth / 2;
+		_tf.y = -_tf.textHeight / 2;
+		_tf.cacheAsBitmap = true;
+		_blur = new flash.filters.BlurFilter( 0 , 0 );
+		addChild( _tf );
+		rotationChange = -2 + Math.random() * 4;
+		trace( "Creating a Letter of: " + char.charAt( 0 ) + " size: " + _tf.width + "x" + _tf.height );
+	}
+	
+	public function dispose() release( this )
+	
+	function isEmbedded( fontName ) {
+		var embed = false;
+		for( f in flash.text.Font.enumerateFonts() )
+			if( f.fontName == fontName )
+				embed = true;
+		return embed;
+	}
+	
+	function setZ( z : Float ) {
+		var blur = z / 20;
+		_blur.blurX = _blur.blurY = blur;
+		filters = [ _blur ];
+		var scale = 1 + z / 250;
+		if( scale < .1 ) scale = .1;
+		if( scale > 2 ) scale = 2;
+		trace( "z:"+ z + ", blur:" + blur + ", scale:" + scale );
+		scaleX = scaleY = scale;
+		return z;
 	}
 }

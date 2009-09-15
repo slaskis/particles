@@ -4,7 +4,7 @@
     <frame>
 	    <library>
 	        <font id="RockwellExtraBold" name="RockwellExtraBold" import="font/ROCKWEEB.TTF" />
-			<clip id="Arrow" import="arrow.png" />
+			<clip id="Arrow" import="arrow.swf" />
 	    </library>
     </frame>
 </movie>

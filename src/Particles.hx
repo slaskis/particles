@@ -17,7 +17,7 @@ class Particles extends flash.display.Sprite {
 	var _tileRenderer : render.TileRenderer;
 	var _simpleRenderer : render.SimpleBitmapRenderer;
 	var _shapeRenderer : render.ShapeRenderer;
-	var _letterRenderer : render.LetterRenderer;
+	var _letterRenderer : render.BitmapLetterRenderer;
 	var _nullRenderer : render.NullRenderer;
 	var _tileMap : flash.display.DisplayObject;
 	var _lastTime : Float;
@@ -56,7 +56,7 @@ class Particles extends flash.display.Sprite {
 		_shapeRenderer = new render.ShapeRenderer( NUM_PARTICLES );
 		addChild( _shapeRenderer );
 		
-		_letterRenderer = new render.LetterRenderer( NUM_PARTICLES , "abcdefghijklmnopqrstuvwxyzåäö0123456789" , stage.stageWidth , stage.stageHeight );
+		_letterRenderer = new render.BitmapLetterRenderer( NUM_PARTICLES , "abcdefghijklmnopqrstuvwxyzåäö0123456789" , stage.stageWidth , stage.stageHeight );
 		_letterRenderer.addEventListener( flash.events.Event.COMPLETE , onLettersDone );
 		_letterRenderer.createLetters();
 		addChild( new flash.display.Bitmap( _letterRenderer ) );

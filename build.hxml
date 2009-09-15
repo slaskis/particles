@@ -1,6 +1,5 @@
--cmd swfmill simple assets/resource.xml
+#-cmd swfmill simple assets/resource.xml
 
---next
 -cp src
 -debug
 -main Particles
@@ -16,7 +15,7 @@
 -main Banner
 -swf deploy/banner.swf
 -swf-version 9
--swf-header 800:600:30:2C1840
+-swf-header 800:600:30:54227d
 -debug
 #--no-traces
 --no-inline
@@ -28,7 +27,7 @@
 -main Banner
 -swf deploy/banner_release_18.swf
 -swf-version 9
--swf-header 800:600:18:2C1840
+-swf-header 800:600:18:54227d
 -D slow
 #-debug
 --no-traces
@@ -41,7 +40,7 @@
 -main Banner
 -swf deploy/banner_release_30.swf
 -swf-version 9
--swf-header 800:600:30:2C1840
+-swf-header 800:600:30:54227d
 #-debug
 --no-traces
 --no-inline
