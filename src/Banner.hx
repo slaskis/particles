@@ -44,7 +44,7 @@ har bytt till
 en godare 
 irish coffee. 
 Boka drink- 
-bord här.  ";
+bord här.";
 
 		
 		// Find values in "flash vars"
@@ -60,7 +60,7 @@ bord här.  ";
 				case "timeout":
 					_timeout = Std.parseInt( val );
 				case "text":
-					_text = StringTools.replace( val , "\\n" , "\n" );
+					_text = val;
 				case "margin":
 					_margin = Std.parseInt( val );
 				case "textSize":
@@ -153,7 +153,7 @@ bord här.  ";
 		}
 		TEXT_FORMAT.size = lastSize;
 		_tf.defaultTextFormat = TEXT_FORMAT;
-		_tf.htmlText = _text;
+		_tf.htmlText = ~/\\n|<br ?\/?>/.replace( _text , "\n" );
 		
 		_tf.x = _width / 2 - _tf.textWidth / 2;
 		_tf.y = _height / 2 - _tf.textHeight / 2;
@@ -188,7 +188,7 @@ bord här.  ";
 		var h = lastCharPosition.height * .7;
 		arr.width = ( arr.width / arr.height ) * h;
 		arr.height = h;
-		arr.x = _tf.x + lastCharPosition.x + lastCharPosition.width;
+		arr.x = _tf.x + lastCharPosition.x + lastCharPosition.width * 2;
 		arr.y = _tf.y + lastCharPosition.y + lastLineMetrics.ascent - h;
 		arr.alpha = 0;
 		var delay = 40;
