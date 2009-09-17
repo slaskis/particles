@@ -33,6 +33,18 @@ class Particles extends flash.display.Sprite {
 		super();
 		_particles = new Array<particles.Particle>( #if flash10 NUM_PARTICLES , true #end );
 		_activeParticles = true;
+		writeLog("hey",123,{obj:"test"});
+	}
+	
+	public var writeLog(getWriteLog,null):Dynamic;
+	function getWriteLog(){
+		return Reflect.makeVarArgs(_writeLog);
+	}
+	function _writeLog(args) : Dynamic {
+		var ret : Dynamic = null;
+		for( a in cast( args , Array<Dynamic> ) )
+			trace( a );
+		return ret;
 	}
 	
 	public function init() {

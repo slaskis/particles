@@ -8,7 +8,7 @@
 -swf-header 800:600:30:FFFFFF
 -lib minimalcomps
 -lib hx3ds
--swf-lib resource.swf
+-swf-lib font/pf_ronda_seven.swf
 
 --next
 -cp src
@@ -41,8 +41,8 @@
 -swf deploy/banner_release_30.swf
 -swf-version 9
 -swf-header 800:600:30:54227d
-#-debug
---no-traces
+-debug
+#--no-traces
 --no-inline
 -swf-lib assets/resources.swf
 -lib hx3ds

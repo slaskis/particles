@@ -137,11 +137,11 @@ class Letter extends flash.display.Sprite {
 	}
 	
 	function setZ( z : Float ) {
-		var blur = z / 20;
+		var blur = Math.abs( z ) / 20;
 		_blur.blurX = _blur.blurY = blur;
 		filters = [ _blur ];
-		var scale = 1 + z / 250;
-		if( scale < .1 ) scale = .1;
+		var scale = 1 + z / 50;
+		if( scale < .5 ) scale = .5;
 		if( scale > 2 ) scale = 2;
 		trace( "z:"+ z + ", blur:" + blur + ", scale:" + scale );
 		scaleX = scaleY = scale;

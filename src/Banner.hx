@@ -27,6 +27,8 @@ class Banner extends flash.display.Sprite {
 	var _timeout : Int;
 	var _ppu : Float;
 	var _arrow : flash.display.DisplayObject;
+	var _content : flash.display.Sprite;
+	var _tweenDone : Dynamic;
 	
 	public function new() super()
 	
@@ -36,13 +38,14 @@ class Banner extends flash.display.Sprite {
 		_height = stage.stageHeight;
 		_ppu = .3;
 		_timeout = 3000;
-		_margin = 20;
+		_margin = 50;
 		_text = "Café Opera 
 har bytt till 
 en godare 
 irish coffee. 
 Boka drink- 
 bord här.  ";
+
 		
 		// Find values in "flash vars"
 		for( param in Reflect.fields( root.loaderInfo.parameters ) ) {
@@ -57,7 +60,7 @@ bord här.  ";
 				case "timeout":
 					_timeout = Std.parseInt( val );
 				case "text":
-					_text = val;
+					_text = StringTools.replace( val , "\\n" , "\n" );
 				case "margin":
 					_margin = Std.parseInt( val );
 				case "textSize":
@@ -118,14 +121,9 @@ bord här.  ";
 	}
 
 	function onLettersDone(_) {
-		_lastTime = haxe.Timer.stamp();
+		reset();
 		addEventListener( flash.events.Event.ENTER_FRAME , update );
 		
-		var o = this;
-		haxe.Timer.delay( function() {
-			// Wait a second before killing it
-			haxe.Timer.delay( o.showText , 1000 );
-		} , _timeout );
 		
 		#if debug
 		//addChild( new flash.display.Bitmap( _renderer.debug() ) );
@@ -149,7 +147,8 @@ bord här.  ";
 			_tf.defaultTextFormat = TEXT_FORMAT;
 			_tf.htmlText = _text;
 			lastSize = TEXT_FORMAT.size;
-			TEXT_FORMAT.size++;
+			if( ++TEXT_FORMAT.size > 127 )
+				break;
 			trace( "Resizing to: " + TEXT_FORMAT.size );
 		}
 		TEXT_FORMAT.size = lastSize;
@@ -159,6 +158,9 @@ bord här.  ";
 		_tf.x = _width / 2 - _tf.textWidth / 2;
 		_tf.y = _height / 2 - _tf.textHeight / 2;
 		//addChild( _tf );
+		
+		_content = new flash.display.Sprite();
+		addChild( _content );
 		
 		// Create alot of tweening copies
 		_tweens = new Array<Dynamic>();
@@ -174,11 +176,11 @@ bord här.  ";
 				l.targetY = _tf.y + pos.y - 2;
 				l.delay = Std.int( Math.random() * 20 );
 				_tweens.push( l.tween );
-				addChild( l );
+				_content.addChild( l );
 			}
 		}
 		
-		var lastCharIndex = _text.length - 1;
+		var lastCharIndex = _tf.text.length - 1;
 		var lastLineIndex = _tf.getLineIndexOfChar( lastCharIndex );
 		var lastLineMetrics = _tf.getLineMetrics( lastLineIndex );
 		var lastCharPosition = _tf.getCharBoundaries( lastCharIndex );
@@ -198,10 +200,46 @@ bord här.  ";
 				arr.alpha = 1;
 			return arr.alpha == 1;
 		} );
-		addChild( arr );
+		_content.addChild( arr );
 		
 		// Stop the emitting...
 		_emitter.maxParticles = 0;
+		_tweenDone = reset;
+	}
+	
+	function reset() {
+		if( _emitter != null )
+			_emitter.maxParticles = NUM_PARTICLES;
+		
+		// Tween out the content
+		if( _content != null && contains( _content ) ) {
+			for( i in 0..._content.numChildren ) {
+				var c = _content.getChildAt( i );
+				var targetY = stage.stageHeight + 50;
+				_tweens.push( function() {
+					c.alpha += ( 0 - c.alpha ) / 6;
+					return c.alpha < .01;
+				} );
+			}
+			_tweenDone = clear;
+		} else clear();
+	}
+	
+	function clear() {
+		if( _content != null && contains( _content ) ) {
+			while( _content.numChildren > 0 ) {
+				var c = _content.getChildAt( 0 );
+				_content.removeChild( c );
+			}
+			removeChild( _content );
+		}
+		
+		_lastTime = haxe.Timer.stamp();
+		var o = this;
+		haxe.Timer.delay( function() {
+			// Wait a second before killing it
+			haxe.Timer.delay( o.showText , 1000 );
+		} , _timeout );
 	}
 	
 	function update(_) {
@@ -212,6 +250,7 @@ bord här.  ";
 		// Render
 		var i = 0;
 		_renderer.before();
+		_emitter.z = -10 + Math.random() * 20;
 		for( p in _emitter.emit() ) {
 			if( p.update( dt ) )
 				_renderer.render( p );
@@ -235,6 +274,7 @@ bord här.  ";
 					_tweens.splice( i , 1 );
 					if( _tweens.length == 0 ) {
 						// Done, need to do something here?
+						haxe.Timer.delay( _tweenDone , 3000 );
 					}
 				}
 				i++;
